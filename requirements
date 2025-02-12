@@ -1,0 +1,81 @@
+Creating a detailed and clear prompt for Cursor.ai (or any AI-I want to create a professional, responsive, and visually appealing website for my Airbnb concierge agency using Next.js, React, and TypeScript. The website should be modern, user-friendly, and optimized for both desktop and mobile devices. Below are the detailed requirements:
+
+---
+
+### **1. Project Setup**
+- Use **Next.js 14** (or the latest stable version) with **React** and **TypeScript**.
+- Set up the project with a clean folder structure (e.g., `components/`, `pages/`, `styles/`, `utils/`, etc.).
+- Use **Tailwind CSS** for styling to ensure a responsive and modern design.
+- Integrate **ESLint** and **Prettier** for code quality and formatting.
+
+---
+
+### **2. Pages and Routes**
+The website should include the following pages:
+1. **Homepage**:
+   - Hero section with a captivating headline, subheadline, and a call-to-action (CTA) button (e.g., "Book Now" or "Contact Us").
+   - Brief introduction to the services offered.
+   - Featured testimonials or reviews from clients.
+   - High-quality images or a slideshow showcasing properties or services.
+
+2. **Services Page**:
+   - Detailed list of services offered (e.g., property management, guest communication, cleaning services, etc.).
+   - Icons or illustrations for each service.
+   - CTA buttons to contact for more information.
+
+3. **About Us Page**:
+   - Information about the agency, mission, and team.
+   - Professional photos of the team or office.
+
+4. **Contact Page**:
+   - Contact form with fields for name, email, phone, and message.
+   - Google Maps integration for the agency's location.
+   - Contact details (email, phone, address).
+
+5. **Blog/Resources Page (Optional)**:
+   - A section for blog posts or resources about Airbnb hosting tips, travel trends, etc.
+   - Dynamic routing for individual blog posts.
+
+---
+
+### **3. Design and Styling**
+- Use a clean, modern design with a color scheme that reflects trust and professionalism (e.g., blues, whites, and neutrals).
+- Ensure the website is fully responsive and works seamlessly on all devices.
+- Use animations or transitions (e.g., fade-ins, hover effects) to enhance user experience.
+- Include a sticky header with a navigation menu and a CTA button.
+
+---
+
+### **4. Functionality**
+- Implement a **contact form** with validation and integration to an email service (e.g., Nodemailer or a third-party API like SendGrid).
+- Add a **Google Maps** widget for the Contact page.
+- Include a **testimonials section** that can be easily updated (consider using a CMS or JSON file for dynamic content).
+- Use **Next.js Image Optimization** for all images to ensure fast loading times.
+- Implement **dark mode** toggle functionality (optional but recommended).
+
+---
+
+### **5. SEO and Performance**
+- Optimize the website for SEO with proper meta tags, alt text for images, and semantic HTML.
+- Ensure fast loading times by leveraging Next.js features like static generation (SSG) or server-side rendering (SSR) where appropriate.
+- Add a sitemap and robots.txt file for better search engine indexing.
+
+---
+
+### **6. Additional Features**
+- Add a **booking or inquiry form** that allows users to submit their property details or request a consultation.
+- Include social media links and icons in the footer.
+- Add a **FAQ section** to address common questions about the services.
+
+---
+
+### **7. Deployment**
+- Provide instructions for deploying the website to **Vercel** (or another hosting platform).
+- Ensure environment variables are properly configured for sensitive data (e.g., API keys).
+
+---
+
+### **8. Deliverables**
+- A fully functional Next.js website with all the pages and features described above.
+- Clean, well-documented code with TypeScript types and interfaces.
+- Instructions for running the project locally and deploying it to production.
