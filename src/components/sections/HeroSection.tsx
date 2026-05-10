@@ -1,7 +1,12 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 const HeroSection = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="relative bg-white overflow-hidden">
       {/* Background decoration */}
@@ -23,15 +28,15 @@ const HeroSection = () => {
             <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
               <h1>
                 <span className="block text-sm font-semibold uppercase tracking-wide text-blue-600 sm:text-base lg:text-sm xl:text-base">
-                  Welcome to KoziBnB
+                  {t.hero.welcome}
                 </span>
                 <span className="mt-1 block text-4xl tracking-tight font-extrabold sm:text-5xl xl:text-6xl">
-                  <span className="block text-gray-900">Maximize Your</span>
-                  <span className="block text-blue-600">Airbnb Potential</span>
+                  <span className="block text-gray-900">{t.hero.titleLine1}</span>
+                  <span className="block text-blue-600">{t.hero.titleLine2}</span>
                 </span>
               </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-                Let us handle everything from guest communication to cleaning services, while you enjoy passive income from your property. Professional management services tailored to your needs.
+                {t.hero.description}
               </p>
               <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
                 <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
@@ -39,13 +44,13 @@ const HeroSection = () => {
                     href="/contact"
                     className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                   >
-                    Get Started
+                    {t.hero.getStarted}
                   </Link>
                   <Link
                     href="/services"
                     className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
                   >
-                    Learn More
+                    {t.hero.learnMore}
                   </Link>
                 </div>
               </div>
@@ -72,4 +77,4 @@ const HeroSection = () => {
   );
 };
 
-export default HeroSection; 
+export default HeroSection;
