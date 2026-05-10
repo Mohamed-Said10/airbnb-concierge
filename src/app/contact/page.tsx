@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 const ContactPage = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,7 +15,6 @@ const ContactPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission logic
     console.log('Form submitted:', formData);
   };
 
@@ -21,10 +22,7 @@ const ContactPage = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -37,21 +35,17 @@ const ContactPage = () => {
           <div className="bg-gray-50 py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
             <div className="max-w-lg mx-auto lg:max-w-xl">
               <h2 className="text-base font-semibold tracking-wide text-blue-600 uppercase">
-                Contact Us
+                {t.contact.label}
               </h2>
               <p className="mt-2 text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight">
-                Let&apos;s Get Started
+                {t.contact.heading}
               </p>
-              <p className="mt-6 text-xl text-gray-500">
-                Ready to maximize your Airbnb potential? Fill out the form below and we&apos;ll get back to you within 24 hours.
-              </p>
+              <p className="mt-6 text-xl text-gray-500">{t.contact.subheading}</p>
             </div>
           </div>
           <div className="bg-blue-600 py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
             <div className="max-w-lg mx-auto lg:max-w-xl">
-              <h3 className="text-2xl font-extrabold text-white sm:text-3xl">
-                Our Office
-              </h3>
+              <h3 className="text-2xl font-extrabold text-white sm:text-3xl">{t.contact.office}</h3>
               <p className="mt-3 text-lg text-blue-200">
                 123 Property Lane<br />
                 Suite 456<br />
@@ -83,7 +77,7 @@ const ContactPage = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Name
+                  {t.contact.form.name}
                 </label>
                 <input
                   type="text"
@@ -98,7 +92,7 @@ const ContactPage = () => {
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email
+                  {t.contact.form.email}
                 </label>
                 <input
                   type="email"
@@ -113,7 +107,7 @@ const ContactPage = () => {
 
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  Phone
+                  {t.contact.form.phone}
                 </label>
                 <input
                   type="tel"
@@ -127,7 +121,7 @@ const ContactPage = () => {
 
               <div>
                 <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700">
-                  Property Type
+                  {t.contact.form.propertyType}
                 </label>
                 <select
                   name="propertyType"
@@ -136,17 +130,17 @@ const ContactPage = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
-                  <option value="apartment">Apartment</option>
-                  <option value="house">House</option>
-                  <option value="condo">Condo</option>
-                  <option value="villa">Villa</option>
-                  <option value="other">Other</option>
+                  <option value="apartment">{t.contact.form.propertyTypes.apartment}</option>
+                  <option value="house">{t.contact.form.propertyTypes.house}</option>
+                  <option value="condo">{t.contact.form.propertyTypes.condo}</option>
+                  <option value="villa">{t.contact.form.propertyTypes.villa}</option>
+                  <option value="other">{t.contact.form.propertyTypes.other}</option>
                 </select>
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                  Message
+                  {t.contact.form.message}
                 </label>
                 <textarea
                   name="message"
@@ -164,7 +158,7 @@ const ContactPage = () => {
                   type="submit"
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  Send Message
+                  {t.contact.form.send}
                 </button>
               </div>
             </form>
@@ -187,4 +181,4 @@ const ContactPage = () => {
   );
 };
 
-export default ContactPage; 
+export default ContactPage;
