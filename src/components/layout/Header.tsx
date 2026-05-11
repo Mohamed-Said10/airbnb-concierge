@@ -37,10 +37,10 @@ const Header = () => {
               </Link>
             ))}
             <Link
-              href="/contact"
+              href="/guest-identity"
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
             >
-              {t.nav.bookNow}
+              {t.nav.guestIdentity}
             </Link>
 
             {/* Language Switcher */}
@@ -107,11 +107,11 @@ const Header = () => {
                 </Link>
               ))}
               <Link
-                href="/contact"
+                href="/guest-identity"
                 className="block px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t.nav.bookNow}
+                {t.nav.guestIdentity}
               </Link>
 
               {/* Mobile Language Switcher */}
