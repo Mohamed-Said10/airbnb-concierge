@@ -40,7 +40,7 @@ const Header = () => {
               href="/contact"
               className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
             >
-              {t.nav.bookNow}
+              {t.nav.guestIdentity}
             </Link>
 
             {/* Language Switcher */}
@@ -111,7 +111,7 @@ const Header = () => {
                 className="block px-3 py-2 text-white bg-primary-600 hover:bg-primary-700 transition-colors rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t.nav.bookNow}
+                {t.nav.guestIdentity}
               </Link>
 
               {/* Mobile Language Switcher */}
