@@ -1,13 +1,13 @@
 'use client';
 
-import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 
-const teamImages = [
-  '/team/sarah.jpeg',
-  '/team/michael.jpeg',
-  '/team/emma.jpeg',
-  '/team/david.jpeg',
+const teamInitials = ['YB', 'FZ', 'KT', 'NE'];
+const teamColors = [
+  'bg-primary-600',
+  'bg-amber-600',
+  'bg-primary-500',
+  'bg-amber-500',
 ];
 
 const valueIcons = [
@@ -95,13 +95,9 @@ const AboutContent = () => {
                 <li key={member.name}>
                   <div className="space-y-4">
                     <div className="aspect-w-3 aspect-h-2">
-                      <Image
-                        className="object-cover shadow-lg rounded-lg"
-                        src={teamImages[index]}
-                        alt={member.name}
-                        width={400}
-                        height={400}
-                      />
+                      <div className={`w-full h-40 rounded-lg shadow-lg flex items-center justify-center ${teamColors[index]}`}>
+                        <span className="text-4xl font-bold text-white">{teamInitials[index]}</span>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <div className="text-lg leading-6 font-medium space-y-1">

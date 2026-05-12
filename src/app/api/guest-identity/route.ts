@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { sendEmail } from '@/lib/brevo';
 
 export async function POST(req: NextRequest) {
   try {
@@ -92,6 +93,28 @@ export async function POST(req: NextRequest) {
 
     const { error: travelersError } = await db.from('travelers').insert(travelerRows);
     if (travelersError) throw travelersError;
+
+    // Email notification to property owner
+    const ownerEmail = process.env.OWNER_EMAIL;
+    if (ownerEmail) {
+      const guestNames = travelers.map((t) => `${t.firstName} ${t.lastName}`).join(', ');
+      await sendEmail({
+        to: [{ email: ownerEmail, name: 'KoziBnB' }],
+        subject: `New Guest Registration — ${guestNames}`,
+        htmlContent: `
+          <h2>New Guest Registration Submitted</h2>
+          <p><strong>Registration ID:</strong> ${registration.id}</p>
+          <p><strong>Check-in:</strong> ${checkInDate}</p>
+          <p><strong>Check-out:</strong> ${checkOutDate}</p>
+          ${propertyRef ? `<p><strong>Property:</strong> ${propertyRef}</p>` : ''}
+          <h3>Travelers (${travelers.length})</h3>
+          <ul>
+            ${travelers.map((t) => `<li>${t.firstName} ${t.lastName} — ${t.nationality} — ${t.idType.toUpperCase()} ${t.idNumber}</li>`).join('')}
+          </ul>
+          <p><a href="${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/admin/registrations">View in admin dashboard</a></p>
+        `,
+      });
+    }
 
     return NextResponse.json({ success: true, registrationId: registration.id }, { status: 201 });
   } catch (err) {

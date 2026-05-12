@@ -179,24 +179,24 @@ export const translations = {
           'Meet the experienced professionals dedicated to managing your property and exceeding guest expectations.',
         members: [
           {
-            name: 'Sarah Johnson',
+            name: 'Youssef Benali',
             role: 'Founder & CEO',
-            bio: '10+ years of experience in property management and hospitality.',
+            bio: '10+ years of experience in Moroccan hospitality and short-term rental management.',
           },
           {
-            name: 'Michael Chen',
+            name: 'Fatima Zahra Idrissi',
             role: 'Operations Director',
-            bio: 'Expert in streamlining property management operations and guest services.',
+            bio: 'Expert in streamlining property operations across Casablanca and Marrakech.',
           },
           {
-            name: 'Emma Rodriguez',
+            name: 'Karim Tazi',
             role: 'Guest Relations Manager',
-            bio: 'Specialized in creating exceptional guest experiences and communication.',
+            bio: 'Multilingual specialist ensuring exceptional experiences for international guests.',
           },
           {
-            name: 'David Kim',
+            name: 'Nadia El Mansouri',
             role: 'Property Management Specialist',
-            bio: 'Experienced in property optimization and maintenance coordination.',
+            bio: 'Experienced in property optimization and Moroccan tourism compliance.',
           },
         ],
       },
@@ -207,6 +207,11 @@ export const translations = {
       subheading:
         "Ready to maximize your Airbnb potential? Fill out the form below and we'll get back to you within 24 hours.",
       office: 'Our Office',
+      address: '45 Bd Mohammed V, Casablanca 20250, Maroc',
+      phone: '+212 6 00 00 00 00',
+      email: 'contact@kozibnb.ma',
+      successMessage: "Message sent! We'll get back to you within 24 hours.",
+      errorMessage: 'Something went wrong. Please try again.',
       form: {
         name: 'Name',
         email: 'Email',
@@ -484,24 +489,24 @@ export const translations = {
           'Rencontrez les professionnels expérimentés dédiés à la gestion de votre propriété et au dépassement des attentes des clients.',
         members: [
           {
-            name: 'Sarah Johnson',
-            role: 'Fondatrice & PDG',
-            bio: "Plus de 10 ans d'expérience dans la gestion immobilière et l'hôtellerie.",
+            name: 'Youssef Benali',
+            role: 'Fondateur & PDG',
+            bio: "Plus de 10 ans d'expérience dans l'hôtellerie marocaine et la gestion de locations courte durée.",
           },
           {
-            name: 'Michael Chen',
-            role: 'Directeur des opérations',
-            bio: "Expert en rationalisation des opérations de gestion immobilière et des services aux clients.",
+            name: 'Fatima Zahra Idrissi',
+            role: 'Directrice des opérations',
+            bio: "Experte en coordination des opérations immobilières à Casablanca et Marrakech.",
           },
           {
-            name: 'Emma Rodriguez',
+            name: 'Karim Tazi',
             role: 'Responsable des relations clients',
-            bio: "Spécialisée dans la création d'expériences clients exceptionnelles et la communication.",
+            bio: "Spécialiste multilingue garantissant des expériences exceptionnelles aux clients internationaux.",
           },
           {
-            name: 'David Kim',
+            name: 'Nadia El Mansouri',
             role: 'Spécialiste en gestion immobilière',
-            bio: "Expérimenté dans l'optimisation immobilière et la coordination de la maintenance.",
+            bio: "Experte en optimisation immobilière et conformité touristique marocaine.",
           },
         ],
       },
@@ -512,6 +517,11 @@ export const translations = {
       subheading:
         "Prêt à maximiser votre potentiel Airbnb ? Remplissez le formulaire ci-dessous et nous vous répondrons dans les 24 heures.",
       office: 'Notre bureau',
+      address: '45 Bd Mohammed V, Casablanca 20250, Maroc',
+      phone: '+212 6 00 00 00 00',
+      email: 'contact@kozibnb.ma',
+      successMessage: "Message envoyé ! Nous vous répondrons dans les 24 heures.",
+      errorMessage: 'Une erreur est survenue. Veuillez réessayer.',
       form: {
         name: 'Nom',
         email: 'E-mail',

@@ -52,8 +52,50 @@ const ServicesContent = () => {
         </div>
       </div>
 
+      {/* Guest Identity Featured Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 overflow-hidden">
+          <div className="px-8 py-10 sm:px-12 sm:py-12 lg:flex lg:items-center lg:gap-12">
+            <div className="lg:flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="inline-block bg-amber-400 text-primary-900 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">
+                  {t.guestIdentityPromo.badge}
+                </span>
+                <span className="text-amber-700 text-sm font-medium">{t.guestIdentityPromo.tag}</span>
+              </div>
+              <h3 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
+                {t.guestIdentityPromo.title}
+              </h3>
+              <p className="mt-3 text-gray-600 text-base max-w-xl">
+                {t.guestIdentityPromo.description}
+              </p>
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {[
+                  { title: t.guestIdentityPromo.detail1Title, text: t.guestIdentityPromo.detail1Text },
+                  { title: t.guestIdentityPromo.detail2Title, text: t.guestIdentityPromo.detail2Text },
+                  { title: t.guestIdentityPromo.detail3Title, text: t.guestIdentityPromo.detail3Text },
+                ].map((d) => (
+                  <div key={d.title} className="bg-white border border-amber-100 rounded-lg px-4 py-3">
+                    <p className="text-amber-600 text-xs font-semibold uppercase tracking-wide">{d.title}</p>
+                    <p className="mt-1 text-gray-500 text-sm">{d.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-8 lg:mt-0 lg:flex-shrink-0">
+              <Link
+                href="/guest-identity"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-primary-600 text-white font-bold text-base hover:bg-primary-700 transition-colors shadow-md"
+              >
+                {t.guestIdentityPromo.cta} →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Service cards section */}
-      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {t.services.items.map((service) => (
             <div

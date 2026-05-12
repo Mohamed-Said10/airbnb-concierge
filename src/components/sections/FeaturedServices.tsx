@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 
 const icons = [
@@ -54,6 +55,46 @@ const FeaturedServices = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Guest Identity Promo */}
+        <div className="mt-16 rounded-2xl bg-primary-600 overflow-hidden">
+          <div className="px-8 py-10 sm:px-12 sm:py-12 lg:flex lg:items-center lg:gap-12">
+            <div className="lg:flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="inline-block bg-amber-400 text-primary-900 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">
+                  {t.guestIdentityPromo.badge}
+                </span>
+                <span className="text-primary-200 text-sm">{t.guestIdentityPromo.tag}</span>
+              </div>
+              <h3 className="text-2xl font-extrabold text-white sm:text-3xl">
+                {t.guestIdentityPromo.title}
+              </h3>
+              <p className="mt-3 text-primary-200 text-base max-w-xl">
+                {t.guestIdentityPromo.description}
+              </p>
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {[
+                  { title: t.guestIdentityPromo.detail1Title, text: t.guestIdentityPromo.detail1Text },
+                  { title: t.guestIdentityPromo.detail2Title, text: t.guestIdentityPromo.detail2Text },
+                  { title: t.guestIdentityPromo.detail3Title, text: t.guestIdentityPromo.detail3Text },
+                ].map((d) => (
+                  <div key={d.title} className="bg-primary-700 rounded-lg px-4 py-3">
+                    <p className="text-amber-300 text-xs font-semibold uppercase tracking-wide">{d.title}</p>
+                    <p className="mt-1 text-primary-100 text-sm">{d.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-8 lg:mt-0 lg:flex-shrink-0">
+              <Link
+                href="/guest-identity"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-amber-400 text-primary-900 font-bold text-base hover:bg-amber-300 transition-colors shadow-lg"
+              >
+                {t.guestIdentityPromo.cta} →
+              </Link>
+            </div>
           </div>
         </div>
       </div>

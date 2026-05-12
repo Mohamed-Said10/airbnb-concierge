@@ -64,23 +64,19 @@ const ContactPage = () => {
           <div className="bg-primary-600 py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
             <div className="max-w-lg mx-auto lg:max-w-xl">
               <h3 className="text-2xl font-extrabold text-white sm:text-3xl">{t.contact.office}</h3>
-              <p className="mt-3 text-lg text-primary-200">
-                123 Property Lane<br />
-                Suite 456<br />
-                San Francisco, CA 94105
-              </p>
+              <p className="mt-3 text-lg text-primary-200">{t.contact.address}</p>
               <div className="mt-8 space-y-3 text-primary-200">
                 <p className="flex items-center">
                   <svg className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  (555) 123-4567
+                  {t.contact.phone}
                 </p>
                 <p className="flex items-center">
                   <svg className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  contact@airconcierge.com
+                  {t.contact.email}
                 </p>
               </div>
             </div>
@@ -171,11 +167,9 @@ const ContactPage = () => {
                 />
               </div>
 
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm text-red-600">{t.contact.errorMessage}</p>}
               {submitted && (
-                <p className="text-sm text-green-600 font-medium">
-                  ✓ Message sent! We&apos;ll get back to you within 24 hours.
-                </p>
+                <p className="text-sm text-green-600 font-medium">✓ {t.contact.successMessage}</p>
               )}
               <div>
                 <button
@@ -189,10 +183,10 @@ const ContactPage = () => {
             </form>
           </div>
 
-          {/* Google Maps */}
+          {/* Google Maps — Casablanca */}
           <div className="h-96 bg-gray-100 rounded-lg overflow-hidden">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.0637731777166!2d-122.39901518441636!3d37.78992847975585!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085807c23cc4ebb%3A0x1c79776c2e9845!2sFinancial%20District%2C%20San%20Francisco%2C%20CA!5e0!3m2!1sen!2sus!4v1645114558367!5m2!1sen!2sus"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3323.3!2d-7.5898!3d33.5731!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda7cd4786b2e05b%3A0x1e8b8e1a4e4a1b2a!2sBoulevard%20Mohammed%20V%2C%20Casablanca!5e0!3m2!1sfr!2sma"
               width="100%"
               height="100%"
               style={{ border: 0 }}
