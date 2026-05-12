@@ -24,7 +24,7 @@ const FeaturedServices = () => {
     <div className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">
+          <h2 className="text-base text-primary-600 font-semibold tracking-wide uppercase">
             {t.featuredServices.label}
           </h2>
           <p className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -42,7 +42,7 @@ const FeaturedServices = () => {
                 <div className="flow-root bg-white rounded-lg px-6 pb-8">
                   <div className="-mt-6">
                     <div>
-                      <span className="inline-flex items-center justify-center p-3 bg-blue-600 rounded-md shadow-lg text-white">
+                      <span className="inline-flex items-center justify-center p-3 bg-primary-600 rounded-md shadow-lg text-white">
                         {icons[index]}
                       </span>
                     </div>

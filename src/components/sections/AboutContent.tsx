@@ -23,14 +23,14 @@ const AboutContent = () => {
   return (
     <div className="bg-white">
       {/* Hero section */}
-      <div className="relative bg-blue-600">
+      <div className="relative bg-primary-600">
         <div className="absolute inset-0">
           <div className="absolute inset-y-0 left-0 w-1/2 bg-gray-50" />
         </div>
         <div className="relative max-w-7xl mx-auto lg:grid lg:grid-cols-2">
           <div className="bg-gray-50 py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
             <div className="max-w-lg mx-auto lg:max-w-xl">
-              <h2 className="text-base font-semibold tracking-wide text-blue-600 uppercase">
+              <h2 className="text-base font-semibold tracking-wide text-primary-600 uppercase">
                 {t.about.label}
               </h2>
               <p className="mt-2 text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight">
@@ -39,10 +39,10 @@ const AboutContent = () => {
               <p className="mt-6 text-xl text-gray-500">{t.about.subheading}</p>
             </div>
           </div>
-          <div className="bg-blue-600 py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
+          <div className="bg-primary-600 py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
             <div className="max-w-lg mx-auto lg:max-w-xl">
               <h3 className="text-2xl font-extrabold text-white sm:text-3xl">{t.about.mission}</h3>
-              <p className="mt-3 text-lg text-blue-200">{t.about.missionText}</p>
+              <p className="mt-3 text-lg text-primary-200">{t.about.missionText}</p>
             </div>
           </div>
         </div>
@@ -52,7 +52,7 @@ const AboutContent = () => {
       <div className="bg-white py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:text-center">
-            <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">
+            <h2 className="text-base text-primary-600 font-semibold tracking-wide uppercase">
               {t.about.values.label}
             </h2>
             <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
@@ -65,7 +65,7 @@ const AboutContent = () => {
               {t.about.values.items.map((value, index) => (
                 <div key={value.title} className="relative">
                   <dt>
-                    <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-600 text-white">
+                    <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-primary-600 text-white">
                       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         {valueIcons[index]}
                       </svg>
@@ -106,7 +106,7 @@ const AboutContent = () => {
                     <div className="space-y-2">
                       <div className="text-lg leading-6 font-medium space-y-1">
                         <h3>{member.name}</h3>
-                        <p className="text-blue-600">{member.role}</p>
+                        <p className="text-primary-600">{member.role}</p>
                       </div>
                       <div className="text-base text-gray-500">
                         <p>{member.bio}</p>
