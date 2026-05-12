@@ -12,10 +12,28 @@ const ContactPage = () => {
     propertyType: 'apartment',
     message: '',
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error('Failed to submit');
+      setSubmitted(true);
+      setFormData({ name: '', email: '', phone: '', propertyType: 'apartment', message: '' });
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -27,14 +45,14 @@ const ContactPage = () => {
 
   return (
     <div className="bg-white">
-      <div className="relative bg-blue-600">
+      <div className="relative bg-primary-600">
         <div className="absolute inset-0">
           <div className="absolute inset-y-0 left-0 w-1/2 bg-gray-50" />
         </div>
         <div className="relative max-w-7xl mx-auto lg:grid lg:grid-cols-2">
           <div className="bg-gray-50 py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
             <div className="max-w-lg mx-auto lg:max-w-xl">
-              <h2 className="text-base font-semibold tracking-wide text-blue-600 uppercase">
+              <h2 className="text-base font-semibold tracking-wide text-primary-600 uppercase">
                 {t.contact.label}
               </h2>
               <p className="mt-2 text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight">
@@ -43,15 +61,15 @@ const ContactPage = () => {
               <p className="mt-6 text-xl text-gray-500">{t.contact.subheading}</p>
             </div>
           </div>
-          <div className="bg-blue-600 py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
+          <div className="bg-primary-600 py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
             <div className="max-w-lg mx-auto lg:max-w-xl">
               <h3 className="text-2xl font-extrabold text-white sm:text-3xl">{t.contact.office}</h3>
-              <p className="mt-3 text-lg text-blue-200">
+              <p className="mt-3 text-lg text-primary-200">
                 123 Property Lane<br />
                 Suite 456<br />
                 San Francisco, CA 94105
               </p>
-              <div className="mt-8 space-y-3 text-blue-200">
+              <div className="mt-8 space-y-3 text-primary-200">
                 <p className="flex items-center">
                   <svg className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -85,7 +103,7 @@ const ContactPage = () => {
                   id="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   required
                 />
               </div>
@@ -100,7 +118,7 @@ const ContactPage = () => {
                   id="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   required
                 />
               </div>
@@ -115,7 +133,7 @@ const ContactPage = () => {
                   id="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
               </div>
 
@@ -128,7 +146,7 @@ const ContactPage = () => {
                   id="propertyType"
                   value={formData.propertyType}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
                   <option value="apartment">{t.contact.form.propertyTypes.apartment}</option>
                   <option value="house">{t.contact.form.propertyTypes.house}</option>
@@ -148,17 +166,24 @@ const ContactPage = () => {
                   rows={4}
                   value={formData.message}
                   onChange={handleChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   required
                 />
               </div>
 
+              {error && <p className="text-sm text-red-600">{error}</p>}
+              {submitted && (
+                <p className="text-sm text-green-600 font-medium">
+                  ✓ Message sent! We&apos;ll get back to you within 24 hours.
+                </p>
+              )}
               <div>
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  disabled={submitting}
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
-                  {t.contact.form.send}
+                  {submitting ? '...' : t.contact.form.send}
                 </button>
               </div>
             </form>

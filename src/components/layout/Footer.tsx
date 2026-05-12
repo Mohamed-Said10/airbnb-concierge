@@ -59,7 +59,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="col-span-2">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-blue-600">KoziBnB</span>
+              <span className="text-2xl font-bold text-primary-600">KoziBnB</span>
             </Link>
             <p className="mt-4 text-gray-600 max-w-md">{t.footer.description}</p>
           </div>
@@ -72,7 +72,7 @@ const Footer = () => {
             <ul className="mt-4 space-y-4">
               {navLinks.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Link href={item.href} className="text-gray-600 hover:text-primary-600 transition-colors">
                     {item.name}
                   </Link>
                 </li>
@@ -90,7 +90,7 @@ const Footer = () => {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-gray-500 hover:text-blue-600 transition-colors"
+                  className="text-gray-500 hover:text-primary-600 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

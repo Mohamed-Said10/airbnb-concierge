@@ -22,7 +22,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-blue-600">KoziBnB</span>
+            <span className="text-2xl font-bold text-primary-600">KoziBnB</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -31,16 +31,16 @@ const Header = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-gray-600 hover:text-blue-600 transition-colors"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
               >
                 {item.name}
               </Link>
             ))}
             <Link
               href="/contact"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
             >
-              {t.nav.bookNow}
+              {t.nav.guestIdentity}
             </Link>
 
             {/* Language Switcher */}
@@ -49,8 +49,8 @@ const Header = () => {
                 onClick={() => setLanguage('en')}
                 className={`px-2.5 py-1 transition-colors ${
                   language === 'en'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-500 hover:text-blue-600'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-500 hover:text-primary-600'
                 }`}
               >
                 EN
@@ -59,8 +59,8 @@ const Header = () => {
                 onClick={() => setLanguage('fr')}
                 className={`px-2.5 py-1 transition-colors ${
                   language === 'fr'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-500 hover:text-blue-600'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-500 hover:text-primary-600'
                 }`}
               >
                 FR
@@ -100,7 +100,7 @@ const Header = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="block px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors"
+                  className="block px-3 py-2 text-gray-600 hover:text-primary-600 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -108,10 +108,10 @@ const Header = () => {
               ))}
               <Link
                 href="/contact"
-                className="block px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-md"
+                className="block px-3 py-2 text-white bg-primary-600 hover:bg-primary-700 transition-colors rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t.nav.bookNow}
+                {t.nav.guestIdentity}
               </Link>
 
               {/* Mobile Language Switcher */}
@@ -120,8 +120,8 @@ const Header = () => {
                   onClick={() => setLanguage('en')}
                   className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                     language === 'en'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-500 hover:text-blue-600'
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-500 hover:text-primary-600'
                   }`}
                 >
                   EN
@@ -130,8 +130,8 @@ const Header = () => {
                   onClick={() => setLanguage('fr')}
                   className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                     language === 'fr'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-500 hover:text-blue-600'
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-500 hover:text-primary-600'
                   }`}
                 >
                   FR

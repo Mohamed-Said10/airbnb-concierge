@@ -27,12 +27,12 @@ const HeroSection = () => {
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
             <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
               <h1>
-                <span className="block text-sm font-semibold uppercase tracking-wide text-blue-600 sm:text-base lg:text-sm xl:text-base">
+                <span className="block text-sm font-semibold uppercase tracking-wide text-primary-600 sm:text-base lg:text-sm xl:text-base">
                   {t.hero.welcome}
                 </span>
                 <span className="mt-1 block text-4xl tracking-tight font-extrabold sm:text-5xl xl:text-6xl">
                   <span className="block text-gray-900">{t.hero.titleLine1}</span>
-                  <span className="block text-blue-600">{t.hero.titleLine2}</span>
+                  <span className="block text-primary-600">{t.hero.titleLine2}</span>
                 </span>
               </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
@@ -42,13 +42,13 @@ const HeroSection = () => {
                 <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
                   <Link
                     href="/contact"
-                    className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
                   >
                     {t.hero.getStarted}
                   </Link>
                   <Link
                     href="/services"
-                    className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
+                    className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 transition-colors"
                   >
                     {t.hero.learnMore}
                   </Link>
@@ -66,7 +66,7 @@ const HeroSection = () => {
                     className="w-full"
                     priority
                   />
-                  <div className="absolute inset-0 bg-blue-600 mix-blend-multiply opacity-20" />
+                  <div className="absolute inset-0 bg-primary-600 mix-blend-multiply opacity-20" />
                 </div>
               </div>
             </div>
