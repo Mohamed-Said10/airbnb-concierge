@@ -102,10 +102,14 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-gray-200 pt-8">
-          <p className="text-center text-gray-500">
+        <div className="mt-8 border-t border-gray-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-gray-500 text-sm">
             © {new Date().getFullYear()} KoziBnB. {t.footer.rights}
           </p>
+          <div className="flex gap-4 text-sm">
+            <Link href="/legal/privacy" className="text-gray-400 hover:text-gray-600 transition-colors">Privacy Policy</Link>
+            <Link href="/legal/terms" className="text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</Link>
+          </div>
         </div>
       </div>
     </footer>

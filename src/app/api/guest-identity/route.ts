@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     const signatureDataUrl = formData.get('signature') as string;
     const travelersJson = formData.get('travelers') as string;
     const propertyRef = (formData.get('propertyRef') as string) || null;
+    const propertyId = (formData.get('propertyId') as string) || null;
 
     if (!checkInDate || !checkOutDate || !signatureDataUrl || !travelersJson) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -35,7 +36,13 @@ export async function POST(req: NextRequest) {
     // Insert registration row
     const { data: registration, error: regError } = await db
       .from('guest_registrations')
-      .insert({ check_in_date: checkInDate, check_out_date: checkOutDate, signature_url: sigUrlData.publicUrl, property_ref: propertyRef })
+      .insert({
+        check_in_date: checkInDate,
+        check_out_date: checkOutDate,
+        signature_url: sigUrlData.publicUrl,
+        property_ref: propertyRef,
+        property_id: propertyId,
+      })
       .select('id')
       .single();
 
@@ -94,8 +101,17 @@ export async function POST(req: NextRequest) {
     const { error: travelersError } = await db.from('travelers').insert(travelerRows);
     if (travelersError) throw travelersError;
 
-    // Email notification to property owner
-    const ownerEmail = process.env.OWNER_EMAIL;
+    // Resolve owner email: from property owner profile, or fall back to env
+    let ownerEmail = process.env.OWNER_EMAIL;
+    if (propertyId) {
+      const { data: prop } = await db
+        .from('properties')
+        .select('profiles!inner(email)')
+        .eq('id', propertyId)
+        .single();
+      const profileEmail = (prop as { profiles?: { email?: string } } | null)?.profiles?.email;
+      if (profileEmail) ownerEmail = profileEmail;
+    }
     if (ownerEmail) {
       const guestNames = travelers.map((t) => `${t.firstName} ${t.lastName}`).join(', ');
       await sendEmail({
