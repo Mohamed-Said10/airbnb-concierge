@@ -20,6 +20,7 @@ async function getStats() {
   return { regCount: regCount ?? 0, leadCount: leadCount ?? 0, recentRegs: recentRegs ?? [], recentLeads: recentLeads ?? [] };
 }
 
+
 export default async function AdminDashboard() {
   const { regCount, leadCount, recentRegs, recentLeads } = await getStats();
 
