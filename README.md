@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KoziBnB
 
-## Getting Started
+KoziBnB is a Next.js concierge and guest-registration platform for short-term
+rental operators. It includes a bilingual marketing site, contact leads,
+property-owner accounts, property-specific guest registration links, secure
+document uploads, and an internal admin dashboard.
 
-First, run the development server:
+## Local setup
+
+1. Install dependencies with `npm ci`.
+2. Copy `.env.example` to `.env.local` and enter the Supabase and Brevo values.
+3. Run `supabase/schema.sql` in the Supabase SQL editor.
+4. Start the app with `npm run dev`.
+
+The Supabase storage bucket is intentionally private. Never expose
+`SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, or `BREVO_API_KEY` to the browser.
+
+## Required Vercel environment variables
+
+Add every variable from `.env.example` in **Project Settings → Environment
+Variables**. For production, set `NEXT_PUBLIC_SITE_URL` to the canonical HTTPS
+domain. Add the same domain plus `/auth/callback` to the Supabase Auth redirect
+URL allowlist.
+
+After changing environment variables, redeploy the project. The standard Vercel
+build command is `npm run build`; no custom output directory is required.
+
+## Quality checks
+
+Run these before deployment:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npx tsc --noEmit
+npm run build
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

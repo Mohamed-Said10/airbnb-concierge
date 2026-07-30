@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Providers } from "@/components/Providers";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   title: "KoziBnB - Professional Airbnb Management Services",
@@ -23,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans min-h-screen flex flex-col`}>
+      <body className="font-sans min-h-screen flex flex-col">
         <Providers>
           <Header />
           <main className="flex-grow pt-16">

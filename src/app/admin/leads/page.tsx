@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import LeadsFilter from './LeadsFilter';
 
+export const dynamic = 'force-dynamic';
+
 interface Lead {
   id: string;
   name: string;

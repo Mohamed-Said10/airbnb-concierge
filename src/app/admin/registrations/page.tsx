@@ -1,4 +1,11 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const PAGE_SIZE = 20;
 
 interface Traveler {
   id: string;
@@ -19,27 +26,51 @@ interface Registration {
   travelers: Traveler[];
 }
 
-async function getRegistrations(): Promise<Registration[]> {
+interface RegistrationsPage {
+  registrations: Registration[];
+  hasNextPage: boolean;
+}
+
+async function getRegistrations(page: number): Promise<RegistrationsPage> {
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE;
+
   const { data, error } = await supabaseAdmin()
     .from('guest_registrations')
     .select('id, check_in_date, check_out_date, property_ref, created_at, travelers(*)')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(from, to);
 
   if (error) {
     console.error('[admin/registrations]', error);
-    return [];
+    return { registrations: [], hasNextPage: false };
   }
-  return (data ?? []) as Registration[];
+
+  const rows = (data ?? []) as Registration[];
+  return {
+    registrations: rows.slice(0, PAGE_SIZE),
+    hasNextPage: rows.length > PAGE_SIZE,
+  };
 }
 
-export default async function RegistrationsPage() {
-  const registrations = await getRegistrations();
+export default async function RegistrationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const requestedPage = Number.parseInt((await searchParams).page ?? '1', 10);
+  const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const { registrations, hasNextPage } = await getRegistrations(page);
+
+  if (page > 1 && registrations.length === 0) {
+    redirect('/admin/registrations');
+  }
 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-extrabold text-gray-900 mb-8">
         Guest Registrations
-        <span className="ml-3 text-base font-normal text-gray-400">({registrations.length})</span>
+        <span className="ml-3 text-base font-normal text-gray-400">Page {page}</span>
       </h1>
 
       {registrations.length === 0 ? (
@@ -107,6 +138,30 @@ export default async function RegistrationsPage() {
               </div>
             </div>
           ))}
+
+          <nav className="flex items-center justify-between pt-2" aria-label="Registration pages">
+            {page > 1 ? (
+              <Link
+                href={`/admin/registrations?page=${page - 1}`}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Previous
+              </Link>
+            ) : (
+              <span />
+            )}
+            <span className="text-sm text-gray-500">Page {page}</span>
+            {hasNextPage ? (
+              <Link
+                href={`/admin/registrations?page=${page + 1}`}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Next
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
         </div>
       )}
     </div>
