@@ -139,3 +139,12 @@ alter table public.guest_registrations
 create index if not exists properties_owner_id_idx on public.properties(owner_id);
 create index if not exists properties_slug_idx on public.properties(slug);
 create index if not exists registrations_property_id_idx on public.guest_registrations(property_id);
+create index if not exists registrations_created_at_idx
+  on public.guest_registrations(created_at desc);
+
+-- Private document storage. All uploads and signed URL creation happen through
+-- server routes using the service-role key; guest identity documents must never
+-- be exposed through a public bucket.
+insert into storage.buckets (id, name, public)
+values ('guest-id-photos', 'guest-id-photos', false)
+on conflict (id) do update set public = false;

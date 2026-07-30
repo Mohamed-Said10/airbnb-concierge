@@ -37,7 +37,7 @@ const Header = () => {
               </Link>
             ))}
             <Link
-              href="/contact"
+              href="/guest-identity"
               className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
             >
               {t.nav.guestIdentity}
@@ -107,7 +107,7 @@ const Header = () => {
                 </Link>
               ))}
               <Link
-                href="/contact"
+                href="/guest-identity"
                 className="block px-3 py-2 text-white bg-primary-600 hover:bg-primary-700 transition-colors rounded-md"
                 onClick={() => setIsMenuOpen(false)}
               >

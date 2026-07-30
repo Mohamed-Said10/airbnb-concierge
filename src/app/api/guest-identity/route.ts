@@ -106,10 +106,13 @@ export async function POST(req: NextRequest) {
     if (propertyId) {
       const { data: prop } = await db
         .from('properties')
-        .select('profiles!inner(email)')
+        .select('owner_id')
         .eq('id', propertyId)
         .single();
-      const profileEmail = (prop as { profiles?: { email?: string } } | null)?.profiles?.email;
+      const { data: profile } = prop?.owner_id
+        ? await db.from('profiles').select('email').eq('id', prop.owner_id).single()
+        : { data: null };
+      const profileEmail = profile?.email;
       if (profileEmail) ownerEmail = profileEmail;
     }
     if (ownerEmail) {

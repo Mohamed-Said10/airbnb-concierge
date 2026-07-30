@@ -96,7 +96,7 @@ interface PhotoUploadProps {
   previewLabel: string; changeLabel: string; required?: boolean;
 }
 
-const PhotoUpload = ({ label, file, onChange, clickLabel, dragLabel, fileTypesLabel, previewLabel, changeLabel, required }: PhotoUploadProps) => {
+const PhotoUpload = ({ label, onChange, clickLabel, dragLabel, fileTypesLabel, previewLabel, changeLabel, required }: PhotoUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -116,6 +116,8 @@ const PhotoUpload = ({ label, file, onChange, clickLabel, dragLabel, fileTypesLa
       </label>
       {preview ? (
         <div className="relative rounded-lg overflow-hidden border border-gray-200">
+          {/* Local object previews are not eligible for Next.js image optimization. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={preview} alt={previewLabel} className="w-full max-h-48 object-contain bg-gray-50" />
           <button type="button" onClick={() => { setPreview(null); onChange(null); }}
             className="absolute top-2 right-2 bg-white text-gray-600 hover:text-red-600 rounded-full px-2 py-1 shadow text-xs font-medium border border-gray-200">

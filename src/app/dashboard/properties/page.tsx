@@ -147,6 +147,8 @@ export default function PropertiesPage() {
     setLoading(false);
   };
 
+  // The client and loader are intentionally created once for this page mount.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadProperties(); }, []);
 
   const handleNameChange = (val: string) => {
