@@ -18,6 +18,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    const travelers: Array<{
+      firstName: string; lastName: string; dateOfBirth: string;
+      placeOfBirth: string; nationality: string; idType: string;
+      idNumber: string; idExpiryDate: string; address: string;
+    }> = JSON.parse(travelersJson);
+
+    const adultCutoff = new Date();
+    adultCutoff.setUTCFullYear(adultCutoff.getUTCFullYear() - 18);
+    const adultCutoffDate = adultCutoff.toISOString().slice(0, 10);
+    if (
+      travelers.length === 0 ||
+      travelers.some((traveler) =>
+        !traveler.dateOfBirth || traveler.dateOfBirth > adultCutoffDate
+      )
+    ) {
+      return NextResponse.json(
+        { error: 'Every traveler must be at least 18 years old' },
+        { status: 400 }
+      );
+    }
+
     // Upload signature (base64 → Buffer)
     const signatureBase64 = signatureDataUrl.replace(/^data:image\/\w+;base64,/, '');
     const signatureBuffer = Buffer.from(signatureBase64, 'base64');
@@ -49,12 +70,6 @@ export async function POST(req: NextRequest) {
     if (regError || !registration) throw regError ?? new Error('Registration insert failed');
 
     // Process each traveler
-    const travelers: Array<{
-      firstName: string; lastName: string; dateOfBirth: string;
-      placeOfBirth: string; nationality: string; idType: string;
-      idNumber: string; idExpiryDate: string; address: string;
-    }> = JSON.parse(travelersJson);
-
     const travelerRows = await Promise.all(
       travelers.map(async (t, idx) => {
         const frontFile = formData.get(`frontPhoto_${idx}`) as File;

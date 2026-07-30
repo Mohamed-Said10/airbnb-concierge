@@ -155,6 +155,12 @@ const ReviewRow = ({ label, value }: { label: string; value: string }) => (
 
 // ─── Traveler Personal Fields ─────────────────────────────────────────────────
 
+const minimumAdultBirthDate = () => {
+  const cutoff = new Date();
+  cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 18);
+  return cutoff.toISOString().slice(0, 10);
+};
+
 interface PersonalLabels {
   heading: string;
   firstName: string; lastName: string; dateOfBirth: string;
@@ -180,7 +186,7 @@ const TravelerFields = ({ traveler, errors, onChange, labels }: {
     </div>
     <div className="grid grid-cols-2 gap-4">
       <Field label={labels.dateOfBirth} error={errors.dateOfBirth}>
-        <input type="date" value={traveler.dateOfBirth} onChange={(e) => onChange('dateOfBirth', e.target.value)} className={inputCls(!!errors.dateOfBirth)} />
+        <input type="date" max={minimumAdultBirthDate()} value={traveler.dateOfBirth} onChange={(e) => onChange('dateOfBirth', e.target.value)} className={inputCls(!!errors.dateOfBirth)} />
       </Field>
       <Field label={labels.placeOfBirth} error={errors.placeOfBirth}>
         <input value={traveler.placeOfBirth} onChange={(e) => onChange('placeOfBirth', e.target.value)} className={inputCls(!!errors.placeOfBirth)} />
@@ -275,6 +281,9 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     const nextTravelerErrors = form.travelers.map((t) => {
       const errs: TravelerErrors = {};
       required.forEach((f) => { if (!t[f]) errs[f] = gi.errors.required; });
+      if (t.dateOfBirth && t.dateOfBirth > minimumAdultBirthDate()) {
+        errs.dateOfBirth = gi.errors.minimumAge;
+      }
       return errs;
     });
     const nextDateErrors: typeof dateErrors = {};
