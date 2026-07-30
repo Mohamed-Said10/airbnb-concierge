@@ -79,7 +79,10 @@ export default async function RegistrationsPage({
         <div className="space-y-6">
           {registrations.map((reg) => (
             <div key={reg.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex flex-wrap items-center gap-4">
+              <Link
+                href={`/admin/registrations/${reg.id}`}
+                className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex flex-wrap items-center gap-4 hover:bg-primary-50 transition-colors group"
+              >
                 <div>
                   <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">ID</span>
                   <p className="text-sm font-mono text-gray-700">{reg.id.slice(0, 8)}…</p>
@@ -102,8 +105,11 @@ export default async function RegistrationsPage({
                   <span className="text-xs text-gray-400">
                     {new Date(reg.created_at).toLocaleString()}
                   </span>
+                  <span className="ml-4 text-sm font-medium text-primary-600 group-hover:underline">
+                    View details
+                  </span>
                 </div>
-              </div>
+              </Link>
 
               {/* Travelers table */}
               <div className="overflow-x-auto">

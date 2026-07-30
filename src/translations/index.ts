@@ -306,6 +306,7 @@ export const translations = {
       },
       errors: {
         required: 'This field is required.',
+        minimumAge: 'The guest must be at least 18 years old.',
         photoRequired: 'Please upload the front side of your ID document.',
         signatureRequired: 'Please sign the form before submitting.',
       },
@@ -616,6 +617,7 @@ export const translations = {
       },
       errors: {
         required: 'Ce champ est obligatoire.',
+        minimumAge: 'Le client doit avoir au moins 18 ans.',
         photoRequired: "Veuillez télécharger le recto de votre document d'identité.",
         signatureRequired: 'Veuillez signer le formulaire avant de soumettre.',
       },

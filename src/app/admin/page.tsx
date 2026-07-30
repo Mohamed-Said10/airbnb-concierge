@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,9 +47,9 @@ export default async function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900">Recent Registrations</h2>
-            <a href="/admin/registrations" className="text-xs text-primary-600 hover:underline">
+            <Link href="/admin/registrations" className="text-xs text-primary-600 hover:underline">
               View all
-            </a>
+            </Link>
           </div>
           <ul className="divide-y divide-gray-100">
             {recentRegs.length === 0 && (
@@ -71,9 +72,9 @@ export default async function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900">Recent Leads</h2>
-            <a href="/admin/leads" className="text-xs text-primary-600 hover:underline">
+            <Link href="/admin/leads" className="text-xs text-primary-600 hover:underline">
               View all
-            </a>
+            </Link>
           </div>
           <ul className="divide-y divide-gray-100">
             {recentLeads.length === 0 && (
