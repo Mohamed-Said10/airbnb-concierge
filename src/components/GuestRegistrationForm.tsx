@@ -162,6 +162,12 @@ const minimumAdultBirthDate = () => {
   cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 18);
   return cutoff.toISOString().slice(0, 10);
 };
+const todayDate = () => new Date().toISOString().slice(0, 10);
+const isValidIdPhoto = (file: File | null) =>
+  !!file &&
+  ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) &&
+  file.size > 0 &&
+  file.size <= 5 * 1024 * 1024;
 
 interface PersonalLabels {
   heading: string;
@@ -189,7 +195,7 @@ const TravelerFields = ({ traveler, errors, onChange, labels, countries }: {
     </div>
     <div>
       <Field label={labels.dateOfBirth} error={errors.dateOfBirth}>
-        <input type="date" max={minimumAdultBirthDate()} value={traveler.dateOfBirth} onChange={(e) => onChange('dateOfBirth', e.target.value)} className={inputCls(!!errors.dateOfBirth)} />
+        <input type="date" min="1900-01-01" max={minimumAdultBirthDate()} value={traveler.dateOfBirth} onChange={(e) => onChange('dateOfBirth', e.target.value)} className={inputCls(!!errors.dateOfBirth)} />
       </Field>
     </div>
     <Field label={labels.nationality} error={errors.nationality}>
@@ -301,14 +307,26 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     const nextTravelerErrors = form.travelers.map((t) => {
       const errs: TravelerErrors = {};
       required.forEach((f) => { if (!t[f]) errs[f] = gi.errors.required; });
-      if (t.dateOfBirth && t.dateOfBirth > minimumAdultBirthDate()) {
+      if (t.firstName && (t.firstName.trim().length < 2 || t.firstName.length > 100)) {
+        errs.firstName = gi.errors.invalidName;
+      }
+      if (t.lastName && (t.lastName.trim().length < 2 || t.lastName.length > 100)) {
+        errs.lastName = gi.errors.invalidName;
+      }
+      if (t.dateOfBirth && (t.dateOfBirth < '1900-01-01' || t.dateOfBirth > minimumAdultBirthDate())) {
         errs.dateOfBirth = gi.errors.minimumAge;
+      }
+      if (t.idNumber && (t.idNumber.trim().length < 3 || t.idNumber.length > 50)) {
+        errs.idNumber = gi.errors.invalidDocument;
       }
       return errs;
     });
     const nextDateErrors: typeof dateErrors = {};
     if (!form.checkInDate) nextDateErrors.checkInDate = gi.errors.required;
     if (!form.checkOutDate) nextDateErrors.checkOutDate = gi.errors.required;
+    if (form.checkInDate && form.checkInDate < todayDate()) {
+      nextDateErrors.checkInDate = gi.errors.pastCheckIn;
+    }
     if (form.checkInDate && form.checkOutDate && form.checkOutDate <= form.checkInDate) {
       nextDateErrors.checkOutDate = gi.errors.invalidStayDates;
     }
@@ -318,7 +336,13 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
   };
 
   const validateUpload = () => {
-    const nextErrors = form.travelers.map((t) => t.idFrontPhoto ? '' : gi.errors.photoRequired);
+    const nextErrors = form.travelers.map((t) => {
+      if (!t.idFrontPhoto) return gi.errors.photoRequired;
+      if (!isValidIdPhoto(t.idFrontPhoto) || (t.idBackPhoto && !isValidIdPhoto(t.idBackPhoto))) {
+        return gi.errors.invalidPhoto;
+      }
+      return '';
+    });
     setUploadErrors(nextErrors);
     return nextErrors.every((e) => !e);
   };
@@ -466,12 +490,12 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                 <h2 className="text-lg font-bold text-gray-800">{gi.personal.heading}</h2>
                 <div className="grid grid-cols-2 gap-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
                   <Field label={gi.personal.checkInDate} error={dateErrors.checkInDate}>
-                    <input type="date" value={form.checkInDate}
+                    <input type="date" min={todayDate()} value={form.checkInDate}
                       onChange={(e) => { setForm((p) => ({ ...p, checkInDate: e.target.value })); setDateErrors((p) => ({ ...p, checkInDate: undefined })); }}
                       className={inputCls(!!dateErrors.checkInDate)} />
                   </Field>
                   <Field label={gi.personal.checkOutDate} error={dateErrors.checkOutDate}>
-                    <input type="date" value={form.checkOutDate}
+                    <input type="date" min={form.checkInDate || todayDate()} value={form.checkOutDate}
                       onChange={(e) => { setForm((p) => ({ ...p, checkOutDate: e.target.value })); setDateErrors((p) => ({ ...p, checkOutDate: undefined })); }}
                       className={inputCls(!!dateErrors.checkOutDate)} />
                   </Field>
