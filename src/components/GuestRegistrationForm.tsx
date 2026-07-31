@@ -169,6 +169,38 @@ const isValidIdPhoto = (file: File | null) =>
   file.size > 0 &&
   file.size <= 5 * 1024 * 1024;
 
+const MAX_COMPRESSED_IMAGE_BYTES = 600 * 1024;
+const MAX_REQUEST_BYTES = 3.8 * 1024 * 1024;
+
+async function compressIdPhoto(file: File): Promise<File> {
+  if (file.size <= MAX_COMPRESSED_IMAGE_BYTES) return file;
+
+  const bitmap = await createImageBitmap(file);
+  let scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  let result: Blob | null = null;
+
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(800, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * (canvas.width / bitmap.width)));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('IMAGE_COMPRESSION_FAILED');
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    result = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', attempt < 2 ? 0.72 : 0.6)
+    );
+    if (result && result.size <= MAX_COMPRESSED_IMAGE_BYTES) break;
+    scale *= 0.82;
+  }
+
+  bitmap.close();
+  if (!result) throw new Error('IMAGE_COMPRESSION_FAILED');
+  return new File([result], `${file.name.replace(/\.[^.]+$/, '')}.jpg`, {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  });
+}
+
 interface PersonalLabels {
   heading: string;
   firstName: string; lastName: string; dateOfBirth: string;
@@ -368,6 +400,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateSignature()) return;
+    setSigError('');
     setSubmitting(true);
     try {
       const fd = new FormData();
@@ -382,18 +415,32 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
         idNumber: t.idNumber, idExpiryDate: t.idExpiryDate, address: t.address,
       }));
       fd.append('travelers', JSON.stringify(travelerMeta));
-      form.travelers.forEach((t, idx) => {
-        if (t.idFrontPhoto) fd.append(`frontPhoto_${idx}`, t.idFrontPhoto);
-        if (t.idBackPhoto) fd.append(`backPhoto_${idx}`, t.idBackPhoto);
-      });
+      let requestBytes = Math.ceil(form.signature.length * 0.75);
+      for (let idx = 0; idx < form.travelers.length; idx += 1) {
+        const traveler = form.travelers[idx];
+        if (traveler.idFrontPhoto) {
+          const frontPhoto = await compressIdPhoto(traveler.idFrontPhoto);
+          fd.append(`frontPhoto_${idx}`, frontPhoto);
+          requestBytes += frontPhoto.size;
+        }
+        if (traveler.idBackPhoto) {
+          const backPhoto = await compressIdPhoto(traveler.idBackPhoto);
+          fd.append(`backPhoto_${idx}`, backPhoto);
+          requestBytes += backPhoto.size;
+        }
+      }
+      if (requestBytes > MAX_REQUEST_BYTES) throw new Error('PAYLOAD_TOO_LARGE');
 
       const res = await fetch('/api/guest-identity', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('Submit failed');
+      if (res.status === 413) throw new Error('PAYLOAD_TOO_LARGE');
+      if (!res.ok) throw new Error('SUBMIT_FAILED');
       const result = await res.json() as { registrationId?: string };
       setRegistrationId(result.registrationId ?? '');
       setSubmitted(true);
-    } catch {
-      setSigError('Submission failed. Please try again.');
+    } catch (error) {
+      setSigError(error instanceof Error && error.message === 'PAYLOAD_TOO_LARGE'
+        ? gi.errors.payloadTooLarge
+        : gi.errors.submissionFailed);
     } finally {
       setSubmitting(false);
     }
