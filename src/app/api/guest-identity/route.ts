@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { sendEmail } from '@/lib/brevo';
+import { COUNTRY_CODES } from '@/data/countries';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +15,13 @@ export async function POST(req: NextRequest) {
     const propertyRef = (formData.get('propertyRef') as string) || null;
     const propertyId = (formData.get('propertyId') as string) || null;
 
-    if (!checkInDate || !checkOutDate || !signatureDataUrl || !travelersJson) {
+    if (
+      !checkInDate ||
+      !checkOutDate ||
+      checkOutDate <= checkInDate ||
+      !signatureDataUrl.startsWith('data:image/') ||
+      !travelersJson
+    ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -30,7 +37,13 @@ export async function POST(req: NextRequest) {
     if (
       travelers.length === 0 ||
       travelers.some((traveler) =>
-        !traveler.dateOfBirth || traveler.dateOfBirth > adultCutoffDate
+        !traveler.firstName.trim() ||
+        !traveler.lastName.trim() ||
+        !traveler.idNumber.trim() ||
+        !COUNTRY_CODES.includes(traveler.nationality) ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(traveler.dateOfBirth) ||
+        Number.isNaN(Date.parse(`${traveler.dateOfBirth}T00:00:00Z`)) ||
+        traveler.dateOfBirth > adultCutoffDate
       )
     ) {
       return NextResponse.json(
@@ -73,6 +86,13 @@ export async function POST(req: NextRequest) {
     const travelerRows = await Promise.all(
       travelers.map(async (t, idx) => {
         const frontFile = formData.get(`frontPhoto_${idx}`) as File;
+        if (
+          !(frontFile instanceof File) ||
+          !frontFile.type.startsWith('image/') ||
+          frontFile.size > 5 * 1024 * 1024
+        ) {
+          throw new Error('A valid ID image under 5 MB is required');
+        }
         const frontPath = `id-photos/${registration.id}/${idx}-front-${Date.now()}.${frontFile.name.split('.').pop()}`;
         const frontBuffer = Buffer.from(await frontFile.arrayBuffer());
 
@@ -101,12 +121,12 @@ export async function POST(req: NextRequest) {
           first_name: t.firstName,
           last_name: t.lastName,
           date_of_birth: t.dateOfBirth,
-          place_of_birth: t.placeOfBirth,
+          place_of_birth: t.placeOfBirth || null,
           nationality: t.nationality,
           id_type: t.idType,
           id_number: t.idNumber,
-          id_expiry_date: t.idExpiryDate,
-          address: t.address,
+          id_expiry_date: t.idExpiryDate || null,
+          address: t.address || null,
           id_front_photo_url: frontUrl.publicUrl,
           id_back_photo_url: backPhotoUrl,
         };

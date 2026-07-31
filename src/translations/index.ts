@@ -261,7 +261,7 @@ export const translations = {
       personal: {
         heading: 'Personal Information',
         firstName: 'First Name', lastName: 'Last Name', dateOfBirth: 'Date of Birth',
-        placeOfBirth: 'Place of Birth', nationality: 'Nationality', idType: 'Document Type',
+        placeOfBirth: 'Place of Birth', nationality: 'Nationality', selectCountry: 'Select a country', idType: 'Document Type',
         idTypes: { cin: 'National ID Card (CIN)', passport: 'Passport', residence: 'Residence Permit', other: 'Other' },
         idNumber: 'Document Number', idExpiryDate: 'Document Expiry Date',
         address: 'Permanent Address', checkInDate: 'Check-in Date', checkOutDate: 'Check-out Date',
@@ -302,11 +302,13 @@ export const translations = {
       success: {
         heading: 'Registration Submitted!',
         message: 'Thank you. Your fiche de police has been successfully submitted. The property owner will receive your information.',
+        printDocument: 'Print check-in document',
         newGuest: 'Register another guest',
       },
       errors: {
         required: 'This field is required.',
         minimumAge: 'The guest must be at least 18 years old.',
+        invalidStayDates: 'Check-out must be after check-in.',
         photoRequired: 'Please upload the front side of your ID document.',
         signatureRequired: 'Please sign the form before submitting.',
       },
@@ -572,7 +574,7 @@ export const translations = {
       personal: {
         heading: 'Informations personnelles',
         firstName: 'Prénom', lastName: 'Nom', dateOfBirth: 'Date de naissance',
-        placeOfBirth: 'Lieu de naissance', nationality: 'Nationalité', idType: 'Type de document',
+        placeOfBirth: 'Lieu de naissance', nationality: 'Nationalité', selectCountry: 'Sélectionnez un pays', idType: 'Type de document',
         idTypes: { cin: "Carte Nationale d'Identité (CIN)", passport: 'Passeport', residence: 'Titre de séjour', other: 'Autre' },
         idNumber: 'Numéro du document', idExpiryDate: "Date d'expiration du document",
         address: 'Adresse permanente', checkInDate: "Date d'arrivée", checkOutDate: 'Date de départ',
@@ -613,11 +615,13 @@ export const translations = {
       success: {
         heading: 'Enregistrement soumis !',
         message: 'Merci. Votre fiche de police a été soumise avec succès. Le propriétaire recevra vos informations.',
+        printDocument: "Imprimer le document d'arrivée",
         newGuest: 'Enregistrer un autre client',
       },
       errors: {
         required: 'Ce champ est obligatoire.',
         minimumAge: 'Le client doit avoir au moins 18 ans.',
+        invalidStayDates: "La date de départ doit être après la date d'arrivée.",
         photoRequired: "Veuillez télécharger le recto de votre document d'identité.",
         signatureRequired: 'Veuillez signer le formulaire avant de soumettre.',
       },
