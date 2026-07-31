@@ -67,7 +67,7 @@ export default async function RegistrationsPage({
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-2xl font-extrabold text-gray-900 mb-8">
         Guest Registrations
         <span className="ml-3 text-base font-normal text-gray-400">Page {page}</span>

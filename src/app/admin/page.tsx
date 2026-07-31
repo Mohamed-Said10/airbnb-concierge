@@ -27,11 +27,11 @@ export default async function AdminDashboard() {
   const { regCount, leadCount, recentRegs, recentLeads } = await getStats();
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-2xl font-extrabold text-gray-900 mb-8">Dashboard</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-6 mb-10 max-w-md">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 mb-10 max-w-md">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <p className="text-sm font-medium text-gray-500">Total Registrations</p>
           <p className="mt-2 text-4xl font-extrabold text-primary-600">{regCount}</p>

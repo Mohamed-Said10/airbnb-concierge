@@ -97,7 +97,7 @@ function PropertyCard({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start justify-between gap-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         <p className="font-semibold text-gray-900">{property.name}</p>
         {property.address && <p className="text-sm text-gray-500 mt-0.5">{property.address}</p>}
@@ -112,7 +112,7 @@ function PropertyCard({
             className="text-xs text-gray-400 hover:text-gray-600">↗ Preview</a>
         </div>
       </div>
-      <div className="flex items-center gap-3 shrink-0 mt-1">
+      <div className="flex items-center gap-3 shrink-0 sm:mt-1">
         <button onClick={() => setEditing(true)} className="text-xs text-gray-500 hover:text-gray-800 transition-colors">
           Edit
         </button>
@@ -197,7 +197,7 @@ export default function PropertiesPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-2xl font-extrabold text-gray-900 mb-8">Properties</h1>
 
       {/* Add property form */}

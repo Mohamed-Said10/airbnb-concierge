@@ -59,7 +59,7 @@ async function createSignedUrl(
 
 function DetailRow({ label, value }: { label: string; value: string | null }) {
   return (
-    <div className="grid grid-cols-[10rem_1fr] gap-4 border-b border-gray-100 py-2.5 last:border-0">
+    <div className="grid gap-1 border-b border-gray-100 py-2.5 last:border-0 sm:grid-cols-[10rem_1fr] sm:gap-4">
       <span className="text-xs font-medium text-gray-500">{label}</span>
       <span className="break-words text-sm text-gray-900">{value || '—'}</span>
     </div>
@@ -123,12 +123,12 @@ export default async function AdminRegistrationDetailPage({
   );
 
   return (
-    <div className="print-document mx-auto max-w-5xl p-8">
+    <div className="print-document mx-auto max-w-5xl p-4 sm:p-8">
       <Link href="/admin/registrations" className="print-hidden text-sm font-medium text-primary-600 hover:underline">
         ← Back to registrations
       </Link>
 
-      <div className="mb-8 mt-5 flex items-start justify-between gap-4">
+      <div className="mb-8 mt-5 flex flex-col items-start justify-between gap-4 sm:flex-row">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900">Guest check-in document</h1>
           <p className="mt-1 break-all font-mono text-xs text-gray-400">{registration.id}</p>
