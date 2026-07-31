@@ -163,6 +163,11 @@ const minimumAdultBirthDate = () => {
   return cutoff.toISOString().slice(0, 10);
 };
 const todayDate = () => new Date().toISOString().slice(0, 10);
+const dayAfter = (date: string) => {
+  const nextDate = new Date(`${date}T00:00:00Z`);
+  nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+  return nextDate.toISOString().slice(0, 10);
+};
 const isValidIdPhoto = (file: File | null) =>
   !!file &&
   ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) &&
@@ -385,11 +390,21 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     return true;
   };
 
+  const showPageTop = () => {
+    // Wait until React has rendered the next step before resetting the viewport.
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    });
+  };
+
   const goNext = () => {
     if (step === 'personal' && !validatePersonal()) return;
     if (step === 'upload' && !validateUpload()) return;
     const idx = STEPS.indexOf(step);
-    if (idx < STEPS.length - 1) setStep(STEPS[idx + 1]);
+    if (idx < STEPS.length - 1) {
+      setStep(STEPS[idx + 1]);
+      showPageTop();
+    }
   };
 
   const goBack = () => {
@@ -539,11 +554,21 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                 <div className="grid gap-4 p-4 sm:grid-cols-2 bg-primary-50 rounded-xl border border-primary-100">
                   <Field label={gi.personal.checkInDate} error={dateErrors.checkInDate}>
                     <input type="date" min={todayDate()} value={form.checkInDate}
-                      onChange={(e) => { setForm((p) => ({ ...p, checkInDate: e.target.value })); setDateErrors((p) => ({ ...p, checkInDate: undefined })); }}
+                      onChange={(e) => {
+                        const checkInDate = e.target.value;
+                        setForm((previous) => ({
+                          ...previous,
+                          checkInDate,
+                          checkOutDate: previous.checkOutDate && previous.checkOutDate <= checkInDate
+                            ? ''
+                            : previous.checkOutDate,
+                        }));
+                        setDateErrors((previous) => ({ ...previous, checkInDate: undefined, checkOutDate: undefined }));
+                      }}
                       className={inputCls(!!dateErrors.checkInDate)} />
                   </Field>
                   <Field label={gi.personal.checkOutDate} error={dateErrors.checkOutDate}>
-                    <input type="date" min={form.checkInDate || todayDate()} value={form.checkOutDate}
+                    <input type="date" min={form.checkInDate ? dayAfter(form.checkInDate) : dayAfter(todayDate())} value={form.checkOutDate}
                       onChange={(e) => { setForm((p) => ({ ...p, checkOutDate: e.target.value })); setDateErrors((p) => ({ ...p, checkOutDate: undefined })); }}
                       className={inputCls(!!dateErrors.checkOutDate)} />
                   </Field>
