@@ -98,6 +98,13 @@ create table if not exists public.travelers (
 
 alter table public.travelers enable row level security;
 
+-- These fields are optional in the simplified guest form. Dropping legacy
+-- constraints is safe to run repeatedly and preserves existing values.
+alter table public.travelers
+  alter column place_of_birth drop not null,
+  alter column id_expiry_date drop not null,
+  alter column address drop not null;
+
 create policy "Anyone can insert travelers"
   on public.travelers for insert
   with check (true);

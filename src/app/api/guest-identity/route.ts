@@ -151,12 +151,14 @@ export async function POST(req: NextRequest) {
           first_name: t.firstName,
           last_name: t.lastName,
           date_of_birth: t.dateOfBirth,
-          place_of_birth: t.placeOfBirth || null,
+          // Empty strings keep compatibility with databases that still have
+          // legacy NOT NULL constraints on fields removed from the form.
+          place_of_birth: t.placeOfBirth || '',
           nationality: t.nationality,
           id_type: t.idType,
           id_number: t.idNumber,
           id_expiry_date: t.idExpiryDate || null,
-          address: t.address || null,
+          address: t.address || '',
           id_front_photo_url: frontUrl.publicUrl,
           id_back_photo_url: backPhotoUrl,
         };

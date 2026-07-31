@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import LanguageToggle from '@/components/LanguageToggle';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
 
   const navigation = [
     { name: t.nav.home, href: '/' },
@@ -43,29 +44,7 @@ const Header = () => {
               {t.nav.guestIdentity}
             </Link>
 
-            {/* Language Switcher */}
-            <div className="flex items-center space-x-1 border border-gray-200 rounded-md overflow-hidden text-sm font-medium">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-2.5 py-1 transition-colors ${
-                  language === 'en'
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-500 hover:text-primary-600'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage('fr')}
-                className={`px-2.5 py-1 transition-colors ${
-                  language === 'fr'
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-500 hover:text-primary-600'
-                }`}
-              >
-                FR
-              </button>
-            </div>
+            <LanguageToggle />
           </div>
 
           {/* Mobile menu button */}
@@ -114,29 +93,7 @@ const Header = () => {
                 {t.nav.guestIdentity}
               </Link>
 
-              {/* Mobile Language Switcher */}
-              <div className="flex items-center space-x-1 px-3 py-2">
-                <button
-                  onClick={() => setLanguage('en')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    language === 'en'
-                      ? 'bg-primary-600 text-white'
-                      : 'text-gray-500 hover:text-primary-600'
-                  }`}
-                >
-                  EN
-                </button>
-                <button
-                  onClick={() => setLanguage('fr')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    language === 'fr'
-                      ? 'bg-primary-600 text-white'
-                      : 'text-gray-500 hover:text-primary-600'
-                  }`}
-                >
-                  FR
-                </button>
-              </div>
+              <div className="px-3 py-2"><LanguageToggle /></div>
             </div>
           </div>
         )}
