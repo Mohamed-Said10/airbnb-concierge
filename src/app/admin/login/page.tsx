@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,6 +14,8 @@ export default function AdminLoginPage() {
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       });
@@ -23,7 +23,9 @@ export default function AdminLoginPage() {
         setError('Invalid password.');
         return;
       }
-      router.push('/admin');
+      // A full navigation guarantees the newly-set HttpOnly cookie is included
+      // when the proxy validates access to the admin area.
+      window.location.replace('/admin');
     } catch {
       setError('Something went wrong.');
     } finally {
