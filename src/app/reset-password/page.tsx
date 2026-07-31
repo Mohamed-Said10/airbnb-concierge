@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
           <h1 className="mt-2 text-xl font-bold text-gray-900">Set new password</h1>
           <p className="mt-1 text-sm text-gray-500">Choose a strong password for your account.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">New password</label>

@@ -40,7 +40,7 @@ export default function LeadsFilter({ leads }: { leads: Lead[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name, email, or message…"
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 w-72"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 w-full sm:w-72"
         />
         <select
           value={statusFilter}

@@ -57,7 +57,7 @@ export default function SignupPage() {
             <Link href="/login" className="text-primary-600 hover:underline font-medium">Sign in</Link>
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full name</label>

@@ -31,7 +31,7 @@ export default async function LeadsPage() {
   const leads = await getLeads();
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-2xl font-extrabold text-gray-900 mb-8">
         Contact Leads
         <span className="ml-3 text-base font-normal text-gray-400">({leads.length})</span>

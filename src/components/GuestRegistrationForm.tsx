@@ -185,7 +185,7 @@ const TravelerFields = ({ traveler, errors, onChange, labels, countries }: {
   countries: Array<{ code: string; name: string }>;
 }) => (
   <div className="space-y-4">
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid gap-4 sm:grid-cols-2">
       <Field label={labels.firstName} error={errors.firstName}>
         <input value={traveler.firstName} onChange={(e) => onChange('firstName', e.target.value)} className={inputCls(!!errors.firstName)} />
       </Field>
@@ -206,7 +206,7 @@ const TravelerFields = ({ traveler, errors, onChange, labels, countries }: {
         ))}
       </select>
     </Field>
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid gap-4 sm:grid-cols-2">
       <Field label={labels.idType}>
         <select value={traveler.idType} onChange={(e) => onChange('idType', e.target.value as IdDocumentType)} className={inputCls(false)}>
           <option value="cin">{labels.idTypes.cin}</option>
@@ -421,7 +421,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
           <p className="text-gray-600 mb-2">{gi.success.message}</p>
           </div>
 
-          <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row">
             <div>
               <h2 className="text-2xl font-extrabold text-gray-900">{gi.pageTitle}</h2>
               {registrationId && <p className="mt-1 break-all font-mono text-xs text-gray-400">{registrationId}</p>}
@@ -480,7 +480,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
           <p className="mt-3 text-xs text-gray-400 italic">{gi.legalNote}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8">
           <StepIndicator currentStep={step}
             labels={{ personal: gi.steps.personalInfo, upload: gi.steps.idUpload, signature: gi.steps.signature }} />
 
@@ -488,7 +488,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
             {step === 'personal' && (
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-gray-800">{gi.personal.heading}</h2>
-                <div className="grid grid-cols-2 gap-4 p-4 bg-primary-50 rounded-xl border border-primary-100">
+                <div className="grid gap-4 p-4 sm:grid-cols-2 bg-primary-50 rounded-xl border border-primary-100">
                   <Field label={gi.personal.checkInDate} error={dateErrors.checkInDate}>
                     <input type="date" min={todayDate()} value={form.checkInDate}
                       onChange={(e) => { setForm((p) => ({ ...p, checkInDate: e.target.value })); setDateErrors((p) => ({ ...p, checkInDate: undefined })); }}
@@ -590,7 +590,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                       </div>
                     </div>
                   ))}
-                  <div className="bg-primary-50 rounded-xl p-4 border border-primary-100 grid grid-cols-2 gap-4">
+                  <div className="bg-primary-50 rounded-xl p-4 border border-primary-100 grid gap-4 sm:grid-cols-2">
                     <ReviewRow label={gi.personal.checkInDate} value={form.checkInDate} />
                     <ReviewRow label={gi.personal.checkOutDate} value={form.checkOutDate} />
                   </div>
@@ -609,7 +609,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
               </div>
             )}
 
-            <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between mt-8 pt-6 border-t border-gray-100">
               <button type="button" onClick={goBack} disabled={step === 'personal'}
                 className="px-5 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none transition-colors">
                 {gi.nav.back}

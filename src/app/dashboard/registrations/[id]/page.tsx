@@ -92,7 +92,7 @@ export default async function RegistrationDetailPage({
   );
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 sm:p-8 max-w-3xl">
       <div className="mb-6">
         <Link href="/dashboard/registrations" className="text-sm text-primary-600 hover:underline">
           ← Back to registrations
@@ -110,7 +110,7 @@ export default async function RegistrationDetailPage({
       {/* Stay details */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">Stay details</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Property</p>
             <p className="mt-1 text-sm font-semibold text-gray-800">{registration.properties?.name ?? '—'}</p>
