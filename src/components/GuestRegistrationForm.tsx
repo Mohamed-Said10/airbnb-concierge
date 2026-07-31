@@ -225,7 +225,8 @@ const TravelerFields = ({ traveler, errors, onChange, labels, countries }: {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const inputCls = (hasError: boolean) =>
-  `mt-1 block w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition
+  `mt-1 block w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-950 caret-gray-950 shadow-sm
+   placeholder:text-gray-400 [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-primary-500 transition
    ${hasError ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:border-primary-500'}`;
 
 const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
