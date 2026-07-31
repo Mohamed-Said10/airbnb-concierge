@@ -3,6 +3,25 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { sendEmail } from '@/lib/brevo';
 import { COUNTRY_CODES } from '@/data/countries';
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const ALLOWED_ID_TYPES = ['cin', 'passport', 'residence', 'other'];
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+function isRealIsoDate(value: string) {
+  if (!ISO_DATE.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function isValidImage(file: File) {
+  return (
+    ALLOWED_IMAGE_TYPES.includes(file.type) &&
+    file.size > 0 &&
+    file.size <= MAX_IMAGE_BYTES
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -18,8 +37,12 @@ export async function POST(req: NextRequest) {
     if (
       !checkInDate ||
       !checkOutDate ||
+      !isRealIsoDate(checkInDate) ||
+      !isRealIsoDate(checkOutDate) ||
+      checkInDate < new Date().toISOString().slice(0, 10) ||
       checkOutDate <= checkInDate ||
       !signatureDataUrl.startsWith('data:image/') ||
+      signatureDataUrl.length > 3 * 1024 * 1024 ||
       !travelersJson
     ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -36,13 +59,18 @@ export async function POST(req: NextRequest) {
     const adultCutoffDate = adultCutoff.toISOString().slice(0, 10);
     if (
       travelers.length === 0 ||
+      travelers.length > 20 ||
       travelers.some((traveler) =>
-        !traveler.firstName.trim() ||
-        !traveler.lastName.trim() ||
-        !traveler.idNumber.trim() ||
+        traveler.firstName.trim().length < 2 ||
+        traveler.firstName.length > 100 ||
+        traveler.lastName.trim().length < 2 ||
+        traveler.lastName.length > 100 ||
+        traveler.idNumber.trim().length < 3 ||
+        traveler.idNumber.length > 50 ||
+        !ALLOWED_ID_TYPES.includes(traveler.idType) ||
         !COUNTRY_CODES.includes(traveler.nationality) ||
-        !/^\d{4}-\d{2}-\d{2}$/.test(traveler.dateOfBirth) ||
-        Number.isNaN(Date.parse(`${traveler.dateOfBirth}T00:00:00Z`)) ||
+        !isRealIsoDate(traveler.dateOfBirth) ||
+        traveler.dateOfBirth < '1900-01-01' ||
         traveler.dateOfBirth > adultCutoffDate
       )
     ) {
@@ -88,8 +116,7 @@ export async function POST(req: NextRequest) {
         const frontFile = formData.get(`frontPhoto_${idx}`) as File;
         if (
           !(frontFile instanceof File) ||
-          !frontFile.type.startsWith('image/') ||
-          frontFile.size > 5 * 1024 * 1024
+          !isValidImage(frontFile)
         ) {
           throw new Error('A valid ID image under 5 MB is required');
         }
@@ -106,6 +133,9 @@ export async function POST(req: NextRequest) {
         let backPhotoUrl: string | null = null;
         const backFile = formData.get(`backPhoto_${idx}`) as File | null;
         if (backFile) {
+          if (!(backFile instanceof File) || !isValidImage(backFile)) {
+            throw new Error('The back ID image must be a JPG, PNG, or WebP under 5 MB');
+          }
           const backPath = `id-photos/${registration.id}/${idx}-back-${Date.now()}.${backFile.name.split('.').pop()}`;
           const backBuffer = Buffer.from(await backFile.arrayBuffer());
           const { error: backErr } = await db.storage
