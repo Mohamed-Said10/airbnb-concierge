@@ -4,9 +4,11 @@ import Link from 'next/link';
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { language } = useLanguage();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const french = language === 'fr';
   const navItems = [
@@ -14,6 +16,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/registrations', label: 'Registrations' },
     { href: '/admin/leads', label: french ? 'Prospects' : 'Leads' },
   ];
+
+  if (pathname === '/admin/login') return <>{children}</>;
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-100 flex overflow-hidden">

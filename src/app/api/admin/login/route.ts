@@ -8,7 +8,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
   }
 
-  const res = NextResponse.json({ success: true });
+  const res = NextResponse.json(
+    { success: true },
+    { headers: { 'Cache-Control': 'no-store' } }
+  );
   res.cookies.set('admin_token', expected, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
