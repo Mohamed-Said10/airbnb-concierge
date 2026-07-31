@@ -19,3 +19,39 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  body {
+    color: #111827;
+    background: #fff;
+  }
+
+  header,
+  footer,
+  aside,
+  .print-hidden {
+    display: none !important;
+  }
+
+  main {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .print-document {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+}

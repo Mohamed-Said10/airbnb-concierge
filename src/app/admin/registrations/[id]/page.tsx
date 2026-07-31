@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
+import PrintButton from '@/components/PrintButton';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -122,17 +123,20 @@ export default async function AdminRegistrationDetailPage({
   );
 
   return (
-    <div className="mx-auto max-w-5xl p-8">
-      <Link href="/admin/registrations" className="text-sm font-medium text-primary-600 hover:underline">
+    <div className="print-document mx-auto max-w-5xl p-8">
+      <Link href="/admin/registrations" className="print-hidden text-sm font-medium text-primary-600 hover:underline">
         ← Back to registrations
       </Link>
 
-      <div className="mb-8 mt-5">
-        <h1 className="text-2xl font-extrabold text-gray-900">Registration details</h1>
-        <p className="mt-1 break-all font-mono text-xs text-gray-400">{registration.id}</p>
+      <div className="mb-8 mt-5 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900">Guest check-in document</h1>
+          <p className="mt-1 break-all font-mono text-xs text-gray-400">{registration.id}</p>
+        </div>
+        <PrintButton />
       </div>
 
-      <section className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="print-card mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-base font-semibold text-gray-900">Registration</h2>
         <DetailRow label="Registration ID" value={registration.id} />
         <DetailRow label="Submitted at" value={new Date(registration.created_at).toLocaleString()} />
@@ -144,7 +148,7 @@ export default async function AdminRegistrationDetailPage({
       </section>
 
       {travelers.map((traveler, index) => (
-        <section key={traveler.id} className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <section key={traveler.id} className="print-card mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="bg-primary-600 px-6 py-3 text-sm font-semibold text-white">
             Traveler {index + 1}: {traveler.first_name} {traveler.last_name}
           </div>
@@ -167,7 +171,7 @@ export default async function AdminRegistrationDetailPage({
         </section>
       ))}
 
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="print-card rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-base font-semibold text-gray-900">Signature</h2>
         {signatureUrl ? (
           <DocumentImage label="Guest signature" url={signatureUrl} />
