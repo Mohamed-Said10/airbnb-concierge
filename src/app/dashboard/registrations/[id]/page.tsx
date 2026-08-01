@@ -2,6 +2,7 @@ import { createServerSupabase } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import DeleteRegistrationButton from '@/components/DeleteRegistrationButton';
 
 interface Traveler {
   id: string;
@@ -104,7 +105,13 @@ export default async function RegistrationDetailPage({
           <h1 className="text-2xl font-extrabold text-gray-900">Registration</h1>
           <p className="text-xs text-gray-400 font-mono mt-1">{registration.id}</p>
         </div>
-        <span className="text-xs text-gray-400">{new Date(registration.created_at).toLocaleString()}</span>
+        <div className="flex flex-col items-end gap-3">
+          <span className="text-xs text-gray-400">{new Date(registration.created_at).toLocaleString()}</span>
+          <DeleteRegistrationButton
+            endpoint={`/api/registrations/${registration.id}`}
+            redirectTo="/dashboard/registrations"
+          />
+        </div>
       </div>
 
       {/* Stay details */}

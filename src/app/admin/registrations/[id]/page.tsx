@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import PrintButton from '@/components/PrintButton';
+import DeleteRegistrationButton from '@/components/DeleteRegistrationButton';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -133,7 +134,13 @@ export default async function AdminRegistrationDetailPage({
           <h1 className="text-2xl font-extrabold text-gray-900">Guest check-in document</h1>
           <p className="mt-1 break-all font-mono text-xs text-gray-400">{registration.id}</p>
         </div>
-        <PrintButton />
+        <div className="print-hidden flex flex-wrap gap-3">
+          <PrintButton />
+          <DeleteRegistrationButton
+            endpoint={`/api/admin/registrations/${registration.id}`}
+            redirectTo="/admin/registrations"
+          />
+        </div>
       </div>
 
       <section className="print-card mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

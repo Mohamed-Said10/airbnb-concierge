@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import DeleteRegistrationButton from '@/components/DeleteRegistrationButton';
 
 interface Traveler {
   id: string;
@@ -107,6 +108,14 @@ export default function RegistrationsFilter({ registrations }: { registrations: 
                     ))}
                   </tbody>
                 </table>
+              </div>
+              <div className="flex justify-end border-t border-gray-100 px-6 py-3">
+                <DeleteRegistrationButton
+                  endpoint={`/api/registrations/${reg.id}`}
+                  redirectTo="/dashboard/registrations"
+                  label="Remove registration"
+                  confirmation="Permanently remove this registration and all its documents?"
+                />
               </div>
             </div>
           ))}
