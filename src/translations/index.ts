@@ -271,6 +271,7 @@ export const translations = {
         instruction: 'Please upload a clear photo of your identity document (front side required, back side optional).',
         frontSide: 'Front Side', backSide: 'Back Side (optional)',
         clickToUpload: 'Click to upload', dragDrop: 'or drag and drop',
+        takePhoto: 'Take a photo', chooseFile: 'Choose a file',
         fileTypes: 'PNG, JPG up to 5MB', preview: 'Preview', change: 'Change photo',
       },
       signatureStep: {
@@ -590,6 +591,7 @@ export const translations = {
         instruction: "Veuillez télécharger une photo claire de votre document d'identité (recto obligatoire, verso facultatif).",
         frontSide: 'Recto', backSide: 'Verso (facultatif)',
         clickToUpload: 'Cliquez pour télécharger', dragDrop: 'ou glisser-déposer',
+        takePhoto: 'Prendre une photo', chooseFile: 'Choisir un fichier',
         fileTypes: "PNG, JPG jusqu'à 5 Mo", preview: 'Aperçu', change: 'Changer la photo',
       },
       signatureStep: {
