@@ -94,21 +94,27 @@ const TrustBanner = ({ heading, subtitle, items }: { heading: string; subtitle: 
 
 interface PhotoUploadProps {
   label: string; file: File | null; onChange: (f: File | null) => void;
-  clickLabel: string; dragLabel: string; fileTypesLabel: string;
-  previewLabel: string; changeLabel: string; required?: boolean;
+  dragLabel: string; fileTypesLabel: string;
+  previewLabel: string; changeLabel: string; takePhotoLabel: string;
+  chooseFileLabel: string; required?: boolean;
 }
 
-const PhotoUpload = ({ label, onChange, clickLabel, dragLabel, fileTypesLabel, previewLabel, changeLabel, required }: PhotoUploadProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+const PhotoUpload = ({ label, file, onChange, dragLabel, fileTypesLabel, previewLabel, changeLabel, takePhotoLabel, chooseFileLabel, required }: PhotoUploadProps) => {
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+
+  useEffect(() => {
+    if (!file) { setPreview(null); return; }
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
 
   const handleFile = (f: File) => {
     if (!f.type.startsWith('image/')) return;
     onChange(f);
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(f);
   };
 
   return (
@@ -127,21 +133,37 @@ const PhotoUpload = ({ label, onChange, clickLabel, dragLabel, fileTypesLabel, p
           </button>
         </div>
       ) : (
-        <div onClick={() => inputRef.current?.click()}
+        <div
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
           onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-          className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors
+          className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-5 transition-colors
             ${dragging ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-400 bg-gray-50'}`}>
-          <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-          </svg>
-          <p className="text-sm text-gray-600"><span className="font-semibold text-primary-600">{clickLabel}</span> {dragLabel}</p>
+          <div className="grid w-full gap-3 sm:grid-cols-2">
+            <button type="button" onClick={() => cameraInputRef.current?.click()}
+              className="flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
+              <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 8.5h3l1.5-2h7l1.5 2h3v10H4v-10Z" />
+                <circle cx="12" cy="13.5" r="3.25" strokeWidth="1.8" />
+              </svg>
+              {takePhotoLabel}
+            </button>
+            <button type="button" onClick={() => fileInputRef.current?.click()}
+              className="flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-3 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-50">
+              <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 16V4m0 0L8 8m4-4 4 4M5 14v5h14v-5" />
+              </svg>
+              {chooseFileLabel}
+            </button>
+          </div>
+          <p className="mt-3 hidden text-sm text-gray-500 sm:block">{dragLabel}</p>
           <p className="text-xs text-gray-400 mt-1">{fileTypesLabel}</p>
         </div>
       )}
-      <input ref={inputRef} type="file" accept="image/*" className="hidden"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
+      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
     </div>
   );
 };
@@ -625,15 +647,17 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                     <div className="p-5 space-y-4">
                       <PhotoUpload label={gi.upload.frontSide} file={traveler.idFrontPhoto}
                         onChange={(f) => updateTraveler(idx, 'idFrontPhoto', f)}
-                        clickLabel={gi.upload.clickToUpload} dragLabel={gi.upload.dragDrop}
+                        dragLabel={gi.upload.dragDrop}
                         fileTypesLabel={gi.upload.fileTypes} previewLabel={gi.upload.preview}
-                        changeLabel={gi.upload.change} required />
+                        changeLabel={gi.upload.change} takePhotoLabel={gi.upload.takePhoto}
+                        chooseFileLabel={gi.upload.chooseFile} required />
                       {uploadErrors[idx] && <p className="text-sm text-red-600 -mt-2">{uploadErrors[idx]}</p>}
                       <PhotoUpload label={gi.upload.backSide} file={traveler.idBackPhoto}
                         onChange={(f) => updateTraveler(idx, 'idBackPhoto', f)}
-                        clickLabel={gi.upload.clickToUpload} dragLabel={gi.upload.dragDrop}
+                        dragLabel={gi.upload.dragDrop}
                         fileTypesLabel={gi.upload.fileTypes} previewLabel={gi.upload.preview}
-                        changeLabel={gi.upload.change} />
+                        changeLabel={gi.upload.change} takePhotoLabel={gi.upload.takePhoto}
+                        chooseFileLabel={gi.upload.chooseFile} />
                     </div>
                   </div>
                 ))}
