@@ -3,18 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  // ── Admin protection (cookie-based, no Supabase) ──────────────────────────
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-    const token = req.cookies.get('admin_token');
-    const expected = process.env.ADMIN_PASSWORD;
-    if (!token || !expected || token.value !== expected) {
-      return NextResponse.redirect(new URL('/admin/login', req.url));
-    }
-    return NextResponse.next();
-  }
-
-  // ── Auth code exchange: forward ?code= to /auth/callback from any URL ──────
   const code = req.nextUrl.searchParams.get('code');
   if (code && !pathname.startsWith('/auth/callback')) {
     const callbackUrl = new URL('/auth/callback', req.url);
@@ -23,44 +11,42 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(callbackUrl);
   }
 
-  // ── Supabase session refresh (keeps auth cookies current) ─────────────────
   let res = NextResponse.next({ request: req });
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return req.cookies.getAll();
-        },
+        getAll: () => req.cookies.getAll(),
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
           res = NextResponse.next({ request: req });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            res.cookies.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => res.cookies.set(name, value, options));
         },
       },
     }
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const user = session?.user ?? null;
+  if (pathname.startsWith('/admin')) {
+    let isAdmin = false;
+    if (user) {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+      isAdmin = profile?.role === 'admin';
+    }
+    if (pathname === '/admin/login') {
+      return isAdmin ? NextResponse.redirect(new URL('/admin', req.url)) : res;
+    }
+    return isAdmin ? res : NextResponse.redirect(new URL('/admin/login', req.url));
+  }
 
-  // ── Dashboard protection ──────────────────────────────────────────────────
   if (pathname.startsWith('/dashboard') && !user) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
-
-  // ── Redirect authenticated users away from auth pages ────────────────────
   if ((pathname === '/login' || pathname === '/signup') && user) {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
-
   return res;
 }
 

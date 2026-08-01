@@ -7,8 +7,13 @@ create table if not exists public.profiles (
   id         uuid references auth.users(id) on delete cascade primary key,
   full_name  text,
   email      text,
+  role       text not null default 'owner' check (role in ('owner', 'admin')),
   created_at timestamptz default now()
 );
+
+alter table public.profiles
+  add column if not exists role text not null default 'owner'
+  check (role in ('owner', 'admin'));
 
 alter table public.profiles enable row level security;
 
@@ -17,6 +22,10 @@ create policy "Users can view own profile"
 
 create policy "Users can update own profile"
   on public.profiles for update using (auth.uid() = id);
+
+-- Owners may edit their name, but cannot promote themselves to administrator.
+revoke update on public.profiles from authenticated;
+grant update (full_name) on public.profiles to authenticated;
 
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer as $$

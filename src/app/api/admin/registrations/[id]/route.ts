@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deleteRegistration } from '@/lib/delete-registration';
+import { isAuthenticatedAdmin } from '@/lib/admin-access';
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const adminToken = request.cookies.get('admin_token')?.value;
-  if (!adminToken || adminToken !== process.env.ADMIN_PASSWORD) {
+  if (!await isAuthenticatedAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
