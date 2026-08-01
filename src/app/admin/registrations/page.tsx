@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import DeleteRegistrationButton from '@/components/DeleteRegistrationButton';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -141,6 +142,14 @@ export default async function RegistrationsPage({
                     ))}
                   </tbody>
                 </table>
+              </div>
+              <div className="flex justify-end border-t border-gray-100 px-6 py-3">
+                <DeleteRegistrationButton
+                  endpoint={`/api/admin/registrations/${reg.id}`}
+                  redirectTo={`/admin/registrations?page=${page}`}
+                  label="Remove registration"
+                  confirmation="Permanently remove this registration and all its documents?"
+                />
               </div>
             </div>
           ))}
