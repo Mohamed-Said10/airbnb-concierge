@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { isAuthenticatedAdmin } from '@/lib/admin-access';
 
 const VALID_STATUSES = ['new', 'contacted', 'converted'];
 
@@ -7,8 +8,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const adminToken = req.cookies.get('admin_token')?.value;
-  if (!adminToken || adminToken !== process.env.ADMIN_PASSWORD) {
+  if (!await isAuthenticatedAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { createBrowserSupabase } from '@/lib/supabase-browser';
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -11,23 +13,20 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    const supabase = createBrowserSupabase();
     try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-      if (!res.ok) {
-        setError('Invalid password.');
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError || !data.user) throw new Error('invalid_credentials');
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+      if (profileError || profile?.role !== 'admin') {
+        await supabase.auth.signOut();
+        setError('This account does not have administrator access.');
         return;
       }
-      // A full navigation guarantees the newly-set HttpOnly cookie is included
-      // when the proxy validates access to the admin area.
       window.location.replace('/admin');
     } catch {
-      setError('Something went wrong.');
+      setError('Email or password is incorrect.');
     } finally {
       setLoading(false);
     }
@@ -42,6 +41,12 @@ export default function AdminLoginPage() {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+              required autoComplete="email" autoFocus />
+          </div>
+          <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
@@ -52,7 +57,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
               required
-              autoFocus
+              autoComplete="current-password"
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
