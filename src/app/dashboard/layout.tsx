@@ -14,6 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard', label: french ? "Vue d'ensemble" : 'Overview' },
     { href: '/dashboard/properties', label: french ? 'Propriétés' : 'Properties' },
     { href: '/dashboard/registrations', label: 'Registrations' },
+    { href: '/dashboard/calendar', label: french ? 'Calendrier' : 'Calendar' },
   ];
 
   return (

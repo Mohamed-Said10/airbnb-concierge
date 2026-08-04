@@ -11,4 +11,4 @@ grant update (full_name) on public.profiles to authenticated;
 -- The account must already exist in Authentication > Users.
 update public.profiles
 set role = 'admin'
-where email = 'YOUR_ADMIN_EMAIL@example.com';
+where email = 'm.erguibi02@gmail.com';

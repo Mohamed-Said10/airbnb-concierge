@@ -164,3 +164,6 @@ create index if not exists registrations_created_at_idx
 insert into storage.buckets (id, name, public)
 values ('guest-id-photos', 'guest-id-photos', false)
 on conflict (id) do update set public = false;
+
+-- Calendar tables, policies, registration trigger, and backfill are maintained
+-- in supabase/calendar-migration.sql so existing deployments can apply them safely.
