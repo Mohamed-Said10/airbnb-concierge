@@ -168,6 +168,20 @@ export async function POST(req: NextRequest) {
     const { error: travelersError } = await db.from('travelers').insert(travelerRows);
     if (travelersError) throw travelersError;
 
+    // The database trigger creates the local calendar event. Enrich its title
+    // with guest names for the dashboard and subscribed calendar feed.
+    if (propertyId) {
+      try {
+        const guestNames = travelers.map((traveler) => `${traveler.firstName} ${traveler.lastName}`).join(', ');
+        await db.from('calendar_events')
+          .update({ title: `Guest reservation · ${guestNames}`, updated_at: new Date().toISOString() })
+          .eq('registration_id', registration.id);
+      } catch (calendarError) {
+        // Calendar integration must never prevent the legally required guest form.
+        console.error('[guest-identity/calendar]', calendarError);
+      }
+    }
+
     // Resolve owner email: from property owner profile, or fall back to env
     let ownerEmail = process.env.OWNER_EMAIL;
     if (propertyId) {
