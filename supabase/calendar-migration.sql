@@ -54,6 +54,12 @@ declare
   property_name text;
 begin
   if new.property_id is null then return new; end if;
+  -- Do not let malformed legacy stays break registration writes or calendar setup.
+  -- New guest submissions are validated by the application before insertion.
+  if new.check_in_date is null or new.check_out_date is null
+     or new.check_out_date <= new.check_in_date then
+    return new;
+  end if;
   select owner_id, name into property_owner, property_name
   from public.properties where id = new.property_id;
 
@@ -90,4 +96,7 @@ select p.owner_id, r.property_id, r.id,
        r.check_in_date, r.check_out_date, 'reserved', 'registration'
 from public.guest_registrations r
 join public.properties p on p.id = r.property_id
+where r.check_in_date is not null
+  and r.check_out_date is not null
+  and r.check_out_date > r.check_in_date
 on conflict (registration_id) where registration_id is not null do nothing;

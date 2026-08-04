@@ -23,6 +23,23 @@ const addDays = (date: string, amount: number) => {
   value.setDate(value.getDate() + amount);
   return iso(value);
 };
+const daysBetween = (from: string, to: string) => Math.round(
+  (new Date(`${to}T12:00:00`).getTime() - new Date(`${from}T12:00:00`).getTime()) / 86_400_000
+);
+const reservationColors = [
+  'bg-blue-600 hover:bg-blue-700 text-white',
+  'bg-emerald-600 hover:bg-emerald-700 text-white',
+  'bg-violet-600 hover:bg-violet-700 text-white',
+  'bg-rose-600 hover:bg-rose-700 text-white',
+  'bg-cyan-600 hover:bg-cyan-700 text-white',
+  'bg-fuchsia-600 hover:bg-fuchsia-700 text-white',
+  'bg-indigo-600 hover:bg-indigo-700 text-white',
+];
+const eventColor = (event: EventRow) => {
+  if (event.status === 'blocked') return 'bg-amber-500 hover:bg-amber-600 text-white';
+  const hash = [...event.id].reduce((total, character) => total + character.charCodeAt(0), 0);
+  return reservationColors[hash % reservationColors.length];
+};
 
 export default function CalendarManager({ initialEvents, properties }: {
   initialEvents: EventRow[]; properties: Property[];
@@ -64,8 +81,31 @@ export default function CalendarManager({ initialEvents, properties }: {
       const day = new Date(start); day.setDate(start.getDate() + index); return day;
     });
   }, [month]);
-  const visibleEvents = propertyFilter ? events.filter((event) => event.property_id === propertyFilter) : events;
-  const eventsForDay = (day: string) => visibleEvents.filter((event) => event.start_date <= day && event.end_date > day);
+  const visibleEvents = useMemo(
+    () => propertyFilter ? events.filter((event) => event.property_id === propertyFilter) : events,
+    [events, propertyFilter]
+  );
+  const weekLayouts = useMemo(() => Array.from({ length: 6 }, (_, weekIndex) => {
+    const weekDays = days.slice(weekIndex * 7, weekIndex * 7 + 7);
+    const weekStart = iso(weekDays[0]);
+    const weekEnd = addDays(iso(weekDays[6]), 1);
+    const segments = visibleEvents
+      .filter((event) => event.start_date < weekEnd && event.end_date > weekStart)
+      .map((event) => {
+        const segmentStart = event.start_date > weekStart ? event.start_date : weekStart;
+        const segmentEnd = event.end_date < weekEnd ? event.end_date : weekEnd;
+        return { event, startColumn: daysBetween(weekStart, segmentStart), endColumn: daysBetween(weekStart, segmentEnd), lane: 0 };
+      })
+      .sort((left, right) => left.startColumn - right.startColumn || right.endColumn - left.endColumn);
+    const laneEnds: number[] = [];
+    for (const segment of segments) {
+      let lane = laneEnds.findIndex((endColumn) => segment.startColumn >= endColumn);
+      if (lane === -1) lane = laneEnds.length;
+      segment.lane = lane;
+      laneEnds[lane] = segment.endColumn;
+    }
+    return { days: weekDays, segments, lanes: laneEnds.length };
+  }), [days, visibleEvents]);
   const openNew = (date = iso(new Date())) => setDraft({ propertyId: propertyFilter || properties[0]?.id || '', title: '', startDate: date, endDate: addDays(date, 1), status: 'reserved', notes: '' });
   const openEvent = (event: EventRow) => setDraft({ id: event.id, propertyId: event.property_id, title: event.title, startDate: event.start_date, endDate: event.end_date, status: event.status, notes: event.notes ?? '' });
 
@@ -128,11 +168,37 @@ export default function CalendarManager({ initialEvents, properties }: {
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="min-w-[760px]">
           <div className="grid grid-cols-7 border-b bg-gray-50">{weekdayLabels.map((day) => <div key={day} className="px-2 py-3 text-center text-xs font-semibold uppercase text-gray-500">{day}</div>)}</div>
-          <div className="grid grid-cols-7">{days.map((day) => { const date = iso(day); const dayEvents = eventsForDay(date); const currentMonth = day.getMonth() === month.getMonth(); return (
-            <button key={date} type="button" onClick={() => openNew(date)} className={`min-h-28 border-b border-r p-2 text-left align-top hover:bg-primary-50 ${currentMonth ? 'bg-white' : 'bg-gray-50/70'}`}>
-              <span className={`text-xs font-semibold ${date === iso(new Date()) ? 'rounded-full bg-primary-600 px-2 py-1 text-white' : currentMonth ? 'text-gray-700' : 'text-gray-400'}`}>{day.getDate()}</span>
-              <div className="mt-2 space-y-1">{dayEvents.slice(0, 3).map((event) => <span key={event.id} role="button" tabIndex={0} onClick={(click) => { click.stopPropagation(); openEvent(event); }} className={`block truncate rounded px-2 py-1 text-[11px] font-semibold ${event.status === 'blocked' ? 'bg-amber-100 text-amber-800' : 'bg-primary-100 text-primary-800'}`}>{event.title}</span>)}{dayEvents.length > 3 && <span className="text-[10px] text-gray-400">+{dayEvents.length - 3}</span>}</div>
-            </button>); })}</div>
+          <div>{weekLayouts.map((week, weekIndex) => (
+            <div key={iso(week.days[0])} className="relative border-b" style={{ height: Math.max(112, 48 + week.lanes * 29) }}>
+              <div className="absolute inset-0 grid grid-cols-7">
+                {week.days.map((day) => { const date = iso(day); const currentMonth = day.getMonth() === month.getMonth(); return (
+                  <button key={date} type="button" onClick={() => openNew(date)} aria-label={`${labels.add}: ${date}`}
+                    className={`border-r p-2 text-left align-top transition-colors hover:bg-primary-50 ${currentMonth ? 'bg-white' : 'bg-gray-50/70'}`}>
+                    <span className={`text-xs font-semibold ${date === iso(new Date()) ? 'rounded-full bg-primary-600 px-2 py-1 text-white' : currentMonth ? 'text-gray-700' : 'text-gray-400'}`}>{day.getDate()}</span>
+                  </button>
+                ); })}
+              </div>
+              <div className="pointer-events-none absolute inset-x-0 top-9 grid grid-cols-7 gap-y-1 px-1">
+                {week.segments.map((segment) => {
+                  const beginsHere = segment.event.start_date >= iso(week.days[0]);
+                  const endsHere = segment.event.end_date <= addDays(iso(week.days[6]), 1);
+                  const propertyName = segment.event.properties?.name ?? '';
+                  return (
+                    <button key={`${segment.event.id}-${weekIndex}`} type="button"
+                      onClick={() => openEvent(segment.event)}
+                      title={`${segment.event.title} · ${propertyName} · ${segment.event.start_date} → ${segment.event.end_date}`}
+                      style={{ gridColumn: `${segment.startColumn + 1} / span ${segment.endColumn - segment.startColumn}`, gridRow: segment.lane + 1 }}
+                      className={`pointer-events-auto flex h-6 min-w-0 items-center gap-1.5 px-2 text-left text-[11px] font-semibold shadow-sm transition-colors ${eventColor(segment.event)} ${beginsHere ? 'ml-1 rounded-l-md' : ''} ${endsHere ? 'mr-1 rounded-r-md' : ''}`}
+                    >
+                      {!beginsHere && <span aria-hidden="true">←</span>}
+                      <span className="truncate">{segment.event.title}{propertyName ? ` · ${propertyName}` : ''}</span>
+                      {endsHere && <span className="ml-auto shrink-0 opacity-80">→</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}</div>
         </div>
       </div>
 
