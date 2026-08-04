@@ -180,12 +180,12 @@ export default function CalendarManager({ initialEvents, properties }: {
               <div className="absolute inset-0 grid grid-cols-7">
                 {week.days.map((day) => { const date = iso(day); const currentMonth = day.getMonth() === month.getMonth(); return (
                   <button key={date} type="button" onClick={() => openNew(date)} aria-label={`${labels.add}: ${date}`}
-                    className={`border-r p-2 text-left align-top transition-colors hover:bg-primary-50 ${currentMonth ? 'bg-white' : 'bg-gray-50/70'}`}>
-                    <span className={`text-xs font-semibold ${date === iso(new Date()) ? 'rounded-full bg-primary-600 px-2 py-1 text-white' : currentMonth ? 'text-gray-700' : 'text-gray-400'}`}>{day.getDate()}</span>
+                    className={`flex items-start justify-start border-r p-2 text-left transition-colors hover:bg-primary-50 ${currentMonth ? 'bg-white' : 'bg-gray-50/70'}`}>
+                    <span className={`relative z-10 text-xs font-semibold ${date === iso(new Date()) ? 'rounded-full bg-primary-600 px-2 py-1 text-white' : currentMonth ? 'text-gray-700' : 'text-gray-400'}`}>{day.getDate()}</span>
                   </button>
                 ); })}
               </div>
-              <div className="pointer-events-none absolute inset-x-0 top-9 grid grid-cols-7 gap-y-1 px-1">
+              <div className="pointer-events-none absolute inset-x-0 top-11 grid grid-cols-7 gap-y-1 px-1">
                 {week.segments.map((segment) => {
                   const beginsHere = segment.event.start_date >= iso(week.days[0]);
                   const propertyName = segment.event.properties?.name ?? '';
