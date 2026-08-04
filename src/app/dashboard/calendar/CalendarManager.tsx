@@ -90,11 +90,18 @@ export default function CalendarManager({ initialEvents, properties }: {
     const weekStart = iso(weekDays[0]);
     const weekEnd = addDays(iso(weekDays[6]), 1);
     const segments = visibleEvents
-      .filter((event) => event.start_date < weekEnd && event.end_date > weekStart)
+      .filter((event) => event.start_date < weekEnd && addDays(event.end_date, 1) > weekStart)
       .map((event) => {
         const segmentStart = event.start_date > weekStart ? event.start_date : weekStart;
-        const segmentEnd = event.end_date < weekEnd ? event.end_date : weekEnd;
-        return { event, startColumn: daysBetween(weekStart, segmentStart), endColumn: daysBetween(weekStart, segmentEnd), lane: 0 };
+        const visualEnd = addDays(event.end_date, 1);
+        const segmentEnd = visualEnd < weekEnd ? visualEnd : weekEnd;
+        return {
+          event,
+          startColumn: daysBetween(weekStart, segmentStart),
+          endColumn: daysBetween(weekStart, segmentEnd),
+          endsAtCheckout: visualEnd <= weekEnd,
+          lane: 0,
+        };
       })
       .sort((left, right) => left.startColumn - right.startColumn || right.endColumn - left.endColumn);
     const laneEnds: number[] = [];
@@ -181,18 +188,23 @@ export default function CalendarManager({ initialEvents, properties }: {
               <div className="pointer-events-none absolute inset-x-0 top-9 grid grid-cols-7 gap-y-1 px-1">
                 {week.segments.map((segment) => {
                   const beginsHere = segment.event.start_date >= iso(week.days[0]);
-                  const endsHere = segment.event.end_date <= addDays(iso(week.days[6]), 1);
                   const propertyName = segment.event.properties?.name ?? '';
+                  const segmentColumns = segment.endColumn - segment.startColumn;
+                  const startOffset = beginsHere ? 0.5 : 0;
+                  const endOffset = segment.endsAtCheckout ? 0.5 : 0;
                   return (
                     <button key={`${segment.event.id}-${weekIndex}`} type="button"
                       onClick={() => openEvent(segment.event)}
                       title={`${segment.event.title} · ${propertyName} · ${segment.event.start_date} → ${segment.event.end_date}`}
-                      style={{ gridColumn: `${segment.startColumn + 1} / span ${segment.endColumn - segment.startColumn}`, gridRow: segment.lane + 1 }}
-                      className={`pointer-events-auto flex h-6 min-w-0 items-center gap-1.5 px-2 text-left text-[11px] font-semibold shadow-sm transition-colors ${eventColor(segment.event)} ${beginsHere ? 'ml-1 rounded-l-md' : ''} ${endsHere ? 'mr-1 rounded-r-md' : ''}`}
+                      style={{
+                        gridColumn: `${segment.startColumn + 1} / span ${segmentColumns}`,
+                        gridRow: segment.lane + 1,
+                        marginLeft: `${(startOffset / segmentColumns) * 100}%`,
+                        width: `${((segmentColumns - startOffset - endOffset) / segmentColumns) * 100}%`,
+                      }}
+                      className={`pointer-events-auto flex h-6 min-w-0 items-center gap-1.5 px-2 text-left text-[11px] font-semibold shadow-sm transition-colors ${eventColor(segment.event)} ${beginsHere ? 'rounded-l-md' : ''} ${segment.endsAtCheckout ? 'rounded-r-md' : ''}`}
                     >
-                      {!beginsHere && <span aria-hidden="true">←</span>}
                       <span className="truncate">{segment.event.title}{propertyName ? ` · ${propertyName}` : ''}</span>
-                      {endsHere && <span className="ml-auto shrink-0 opacity-80">→</span>}
                     </button>
                   );
                 })}
