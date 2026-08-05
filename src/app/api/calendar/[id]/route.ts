@@ -13,16 +13,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const endDate = typeof body.endDate === 'string' ? body.endDate : '';
   const notes = typeof body.notes === 'string' ? body.notes.trim() : '';
   const status = body.status === 'blocked' ? 'blocked' : 'reserved';
+  const rawNightPrice = typeof body.nightPrice === 'number' ? body.nightPrice : Number(body.nightPrice);
+  const nightPrice = status === 'reserved' && body.nightPrice !== '' && body.nightPrice != null && Number.isFinite(rawNightPrice) && rawNightPrice >= 0 ? rawNightPrice : null;
   if (!propertyId || !title || title.length > 150 || !/^\d{4}-\d{2}-\d{2}$/.test(startDate) || endDate <= startDate || notes.length > 1000) {
     return NextResponse.json({ error: 'Invalid event data' }, { status: 400 });
   }
   if (!await ownerHasProperty(user.id, propertyId)) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+  const nights = Math.round((new Date(`${endDate}T00:00:00Z`).getTime() - new Date(`${startDate}T00:00:00Z`).getTime()) / 86_400_000);
+  const amount = nightPrice != null ? Math.round(nightPrice * nights * 100) / 100 : null;
   const db = supabaseAdmin();
   const { data, error } = await db.from('calendar_events').update({
     property_id: propertyId, title, start_date: startDate, end_date: endDate,
-    notes: notes || null, status, updated_at: new Date().toISOString(),
+    notes: notes || null, status, night_price: nightPrice, amount, updated_at: new Date().toISOString(),
   }).eq('id', id).eq('owner_id', user.id)
-    .select('id, property_id, registration_id, title, start_date, end_date, status, source, notes, properties(name, address)').maybeSingle();
+    .select('id, property_id, registration_id, title, start_date, end_date, status, source, notes, night_price, amount, properties(name, address)').maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ event: data });

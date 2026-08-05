@@ -7,10 +7,10 @@ interface Property { id: string; name: string; address: string | null; }
 interface EventRow {
   id: string; property_id: string; registration_id: string | null; title: string;
   start_date: string; end_date: string; status: 'reserved' | 'blocked';
-  source: 'manual' | 'registration'; notes: string | null;
+  source: 'manual' | 'registration'; notes: string | null; night_price: number | null; amount: number | null;
   properties: { name: string; address: string | null } | null;
 }
-interface EventDraft { id?: string; propertyId: string; title: string; startDate: string; endDate: string; status: 'reserved' | 'blocked'; notes: string; }
+interface EventDraft { id?: string; propertyId: string; title: string; startDate: string; endDate: string; status: 'reserved' | 'blocked'; notes: string; nightPrice: string; }
 
 const iso = (date: Date) => {
   const year = date.getFullYear();
@@ -61,16 +61,16 @@ export default function CalendarManager({ initialEvents, properties }: {
   const labels = fr ? {
     title: 'Calendrier des réservations', add: 'Ajouter une réservation', today: "Aujourd'hui",
     property: 'Propriété', all: 'Toutes les propriétés', eventTitle: 'Titre', start: 'Arrivée', end: 'Départ',
-    status: 'Type', reserved: 'Réservé', blocked: 'Bloqué', notes: 'Notes', cancel: 'Annuler', save: 'Enregistrer',
+    status: 'Type', reserved: 'Réservé', blocked: 'Bloqué', notes: 'Notes', cancel: 'Annuler', save: 'Enregistrer', nightPrice: 'Prix par nuit', total: 'Total',
     delete: 'Supprimer', deleteQuestion: 'Supprimer cet événement ?', irreversible: 'Cette action est définitive.',
     subscribe: 'Ajouter à Google Calendar', copy: 'Copier le lien', copied: 'Lien copié', reset: 'Créer un nouveau lien',
-    empty: 'Aucun événement', registration: 'Créé depuis une fiche client', manual: 'Ajout manuel',
+    empty: 'Aucun événement', registration: 'Créé depuis une fiche client', manual: 'Ajout manuel', night: 'nuit', nights: 'nuits',
   } : {
     title: 'Reservation calendar', add: 'Add reservation', today: 'Today', property: 'Property', all: 'All properties',
     eventTitle: 'Title', start: 'Check-in', end: 'Check-out', status: 'Type', reserved: 'Reserved', blocked: 'Blocked',
-    notes: 'Notes', cancel: 'Cancel', save: 'Save', delete: 'Delete', deleteQuestion: 'Delete this event?',
+    notes: 'Notes', cancel: 'Cancel', save: 'Save', delete: 'Delete', deleteQuestion: 'Delete this event?', nightPrice: 'Price per night', total: 'Total',
     irreversible: 'This action cannot be undone.', subscribe: 'Add to Google Calendar', copy: 'Copy link', copied: 'Link copied', reset: 'Create a new link',
-    empty: 'No events', registration: 'Created from guest registration', manual: 'Added manually',
+    empty: 'No events', registration: 'Created from guest registration', manual: 'Added manually', night: 'night', nights: 'nights',
   };
 
   const days = useMemo(() => {
@@ -113,8 +113,8 @@ export default function CalendarManager({ initialEvents, properties }: {
     }
     return { days: weekDays, segments, lanes: laneEnds.length };
   }), [days, visibleEvents]);
-  const openNew = (date = iso(new Date())) => setDraft({ propertyId: propertyFilter || properties[0]?.id || '', title: '', startDate: date, endDate: addDays(date, 1), status: 'reserved', notes: '' });
-  const openEvent = (event: EventRow) => setDraft({ id: event.id, propertyId: event.property_id, title: event.title, startDate: event.start_date, endDate: event.end_date, status: event.status, notes: event.notes ?? '' });
+  const openNew = (date = iso(new Date())) => setDraft({ propertyId: propertyFilter || properties[0]?.id || '', title: '', startDate: date, endDate: addDays(date, 1), status: 'reserved', notes: '', nightPrice: '' });
+  const openEvent = (event: EventRow) => setDraft({ id: event.id, propertyId: event.property_id, title: event.title, startDate: event.start_date, endDate: event.end_date, status: event.status, notes: event.notes ?? '', nightPrice: event.night_price != null ? String(event.night_price) : '' });
 
   const save = async () => {
     if (!draft || !draft.propertyId || !draft.title.trim() || draft.endDate <= draft.startDate) return;
@@ -195,7 +195,7 @@ export default function CalendarManager({ initialEvents, properties }: {
                   return (
                     <button key={`${segment.event.id}-${weekIndex}`} type="button"
                       onClick={() => openEvent(segment.event)}
-                      title={`${segment.event.title} · ${propertyName} · ${segment.event.start_date} → ${segment.event.end_date}`}
+                      title={`${segment.event.title} · ${propertyName} · ${segment.event.start_date} → ${segment.event.end_date}${segment.event.amount != null ? ` · ${segment.event.amount.toLocaleString(fr ? 'fr-FR' : 'en-US')} MAD` : ''}`}
                       style={{
                         gridColumn: `${segment.startColumn + 1} / span ${segmentColumns}`,
                         gridRow: segment.lane + 1,
@@ -245,6 +245,19 @@ export default function CalendarManager({ initialEvents, properties }: {
             <label className="block text-sm font-medium text-gray-700">{labels.eventTitle}<input value={draft.title} maxLength={150} onChange={(event) => setDraft({ ...draft, title: event.target.value })} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" /></label>
             <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-gray-700">{labels.start}<input type="date" value={draft.startDate} onChange={(event) => setDraft({ ...draft, startDate: event.target.value, endDate: draft.endDate <= event.target.value ? addDays(event.target.value, 1) : draft.endDate })} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" /></label><label className="text-sm font-medium text-gray-700">{labels.end}<input type="date" min={addDays(draft.startDate, 1)} value={draft.endDate} onChange={(event) => setDraft({ ...draft, endDate: event.target.value })} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" /></label></div>
             <label className="block text-sm font-medium text-gray-700">{labels.status}<select value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value as EventDraft['status'] })} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900"><option value="reserved">{labels.reserved}</option><option value="blocked">{labels.blocked}</option></select></label>
+            {draft.status === 'reserved' && (() => {
+              const nights = draft.endDate > draft.startDate ? daysBetween(draft.startDate, draft.endDate) : 0;
+              const price = Number(draft.nightPrice);
+              const total = draft.nightPrice !== '' && Number.isFinite(price) ? price * nights : null;
+              return (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{labels.nightPrice} (MAD)
+                    <input type="number" min="0" step="0.01" value={draft.nightPrice} onChange={(event) => setDraft({ ...draft, nightPrice: event.target.value })} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" />
+                  </label>
+                  {total != null && <p className="mt-1.5 text-xs text-gray-500">{nights} {nights === 1 ? labels.night : labels.nights} × {draft.nightPrice} MAD = <span className="font-semibold text-gray-700">{total.toLocaleString(fr ? 'fr-FR' : 'en-US')} MAD</span> ({labels.total})</p>}
+                </div>
+              );
+            })()}
             <label className="block text-sm font-medium text-gray-700">{labels.notes}<textarea value={draft.notes} maxLength={1000} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} rows={3} className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" /></label>
             {deleteConfirm && <div className="rounded-xl border border-red-200 bg-red-50 p-4"><p className="font-semibold text-red-800">{labels.deleteQuestion}</p><p className="mt-1 text-xs text-red-600">{labels.irreversible}</p><div className="mt-3 flex gap-2"><button onClick={remove} disabled={saving} className="rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white">{labels.delete}</button><button onClick={() => setDeleteConfirm(false)} className="rounded-lg border bg-white px-4 py-2 text-xs font-semibold text-gray-700">{labels.cancel}</button></div></div>}
           </div>
