@@ -12,7 +12,7 @@ export default async function CalendarPage() {
   const [{ data: properties }, { data: events }] = await Promise.all([
     db.from('properties').select('id, name, address').eq('owner_id', user.id).order('name'),
     db.from('calendar_events')
-      .select('id, property_id, registration_id, title, start_date, end_date, status, source, notes, properties(name, address)')
+      .select('id, property_id, registration_id, title, start_date, end_date, status, source, notes, night_price, amount, properties(name, address)')
       .eq('owner_id', user.id).order('start_date'),
   ]);
   return (
