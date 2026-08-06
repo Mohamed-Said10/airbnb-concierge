@@ -304,7 +304,6 @@ export const translations = {
         heading: 'Registration Submitted!',
         message: 'Thank you. Your fiche de police has been successfully submitted. The property owner will receive your information.',
         printDocument: 'Print check-in document',
-        newGuest: 'Register another guest',
       },
       errors: {
         required: 'This field is required.',
@@ -318,6 +317,7 @@ export const translations = {
         signatureRequired: 'Please sign the form before submitting.',
         payloadTooLarge: 'The combined ID images are too large. Remove optional back images or use smaller photos.',
         submissionFailed: 'Submission failed. Please try again.',
+        fixHighlighted: 'Please correct the highlighted fields above before continuing.',
       },
     },
   },
@@ -624,7 +624,6 @@ export const translations = {
         heading: 'Enregistrement soumis !',
         message: 'Merci. Votre fiche de police a été soumise avec succès. Le propriétaire recevra vos informations.',
         printDocument: "Imprimer le document d'arrivée",
-        newGuest: 'Enregistrer un autre client',
       },
       errors: {
         required: 'Ce champ est obligatoire.',
@@ -638,6 +637,7 @@ export const translations = {
         signatureRequired: 'Veuillez signer le formulaire avant de soumettre.',
         payloadTooLarge: "Les images d'identité sont trop volumineuses. Supprimez les versos facultatifs ou utilisez des photos plus petites.",
         submissionFailed: "L'envoi a échoué. Veuillez réessayer.",
+        fixHighlighted: 'Veuillez corriger les champs surlignés ci-dessus avant de continuer.',
       },
     },
   },
