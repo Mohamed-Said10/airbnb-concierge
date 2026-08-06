@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useLanguage } from '@/context/LanguageContext';
 import type { GuestRegistrationData, TravelerData, TravelerErrors, FormStep, IdDocumentType } from '@/types/guest-identity';
@@ -237,27 +237,27 @@ interface PersonalLabels {
   checkInDate: string; checkOutDate: string;
 }
 
-const TravelerFields = ({ traveler, errors, onChange, labels, countries }: {
-  traveler: TravelerData; errors: TravelerErrors;
+const TravelerFields = ({ idx, traveler, errors, onChange, labels, countries }: {
+  idx: number; traveler: TravelerData; errors: TravelerErrors;
   onChange: (field: keyof TravelerData, value: string | IdDocumentType) => void;
   labels: PersonalLabels;
   countries: Array<{ code: string; name: string }>;
 }) => (
   <div className="space-y-4">
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field label={labels.firstName} error={errors.firstName}>
+      <Field id={`traveler-${idx}-firstName`} label={labels.firstName} error={errors.firstName}>
         <input value={traveler.firstName} onChange={(e) => onChange('firstName', e.target.value)} className={inputCls(!!errors.firstName)} />
       </Field>
-      <Field label={labels.lastName} error={errors.lastName}>
+      <Field id={`traveler-${idx}-lastName`} label={labels.lastName} error={errors.lastName}>
         <input value={traveler.lastName} onChange={(e) => onChange('lastName', e.target.value)} className={inputCls(!!errors.lastName)} />
       </Field>
     </div>
     <div>
-      <Field label={labels.dateOfBirth} error={errors.dateOfBirth}>
+      <Field id={`traveler-${idx}-dateOfBirth`} label={labels.dateOfBirth} error={errors.dateOfBirth}>
         <input type="date" min="1900-01-01" max={minimumAdultBirthDate()} value={traveler.dateOfBirth} onChange={(e) => onChange('dateOfBirth', e.target.value)} className={inputCls(!!errors.dateOfBirth)} />
       </Field>
     </div>
-    <Field label={labels.nationality} error={errors.nationality}>
+    <Field id={`traveler-${idx}-nationality`} label={labels.nationality} error={errors.nationality}>
       <select value={traveler.nationality} onChange={(e) => onChange('nationality', e.target.value)} className={inputCls(!!errors.nationality)}>
         <option value="">{labels.selectCountry}</option>
         {countries.map((country) => (
@@ -274,7 +274,7 @@ const TravelerFields = ({ traveler, errors, onChange, labels, countries }: {
           <option value="other">{labels.idTypes.other}</option>
         </select>
       </Field>
-      <Field label={labels.idNumber} error={errors.idNumber}>
+      <Field id={`traveler-${idx}-idNumber`} label={labels.idNumber} error={errors.idNumber}>
         <input value={traveler.idNumber} onChange={(e) => onChange('idNumber', e.target.value)} className={inputCls(!!errors.idNumber)} />
       </Field>
     </div>
@@ -288,8 +288,8 @@ const inputCls = (hasError: boolean) =>
    placeholder:text-gray-400 [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-primary-500 transition
    ${hasError ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:border-primary-500'}`;
 
-const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
-  <div>
+const Field = ({ label, error, id, children }: { label: string; error?: string; id?: string; children: React.ReactNode }) => (
+  <div id={id}>
     <label className="block text-sm font-medium text-gray-700">{label}</label>
     {children}
     {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
@@ -306,7 +306,11 @@ interface Props {
 export default function GuestRegistrationForm({ propertyId, propertyName }: Props) {
   const { t, language } = useLanguage();
   const gi = t.guestIdentity;
-  const countries = useMemo(() => countryOptions(language), [language]);
+  // Intl.DisplayNames/localeCompare can resolve differently between the server's ICU
+  // data and the browser's, so this list is built client-side only (after mount) to
+  // avoid a hydration text mismatch across ~200 <option> labels.
+  const [countries, setCountries] = useState<Array<{ code: string; name: string }>>([]);
+  useEffect(() => { setCountries(countryOptions(language)); }, [language]);
   const [detectedCountry, setDetectedCountry] = useState('');
 
   const [step, setStep] = useState<FormStep>('personal');
@@ -315,6 +319,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
   const [travelerErrors, setTravelerErrors] = useState<TravelerErrors[]>([{}]);
   const [uploadErrors, setUploadErrors] = useState<string[]>(['']);
   const [sigError, setSigError] = useState('');
+  const [stepWarning, setStepWarning] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [registrationId, setRegistrationId] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -323,7 +328,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     let active = true;
     fetch('/api/location')
       .then((response) => response.json())
-      .then(({ countryCode }: { countryCode: string | null }) => {
+      .then(({ countryCode }: { countryCode: string }) => {
         if (!active || !countryCode) return;
         setDetectedCountry(countryCode);
         setForm((previous) => ({
@@ -348,6 +353,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
       next[idx] = { ...next[idx], [field]: undefined };
       return next;
     });
+    setStepWarning('');
   };
 
   const addTraveler = () => {
@@ -360,6 +366,17 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     setForm((prev) => ({ ...prev, travelers: prev.travelers.filter((_, i) => i !== idx) }));
     setTravelerErrors((prev) => prev.filter((_, i) => i !== idx));
     setUploadErrors((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const scrollToFirstError = (ids: string[]) => {
+    const targetId = ids[0];
+    if (!targetId) return;
+    window.requestAnimationFrame(() => {
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.querySelector<HTMLElement>('input, select, textarea, button')?.focus({ preventScroll: true });
+    });
   };
 
   const validatePersonal = () => {
@@ -392,7 +409,20 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     }
     setTravelerErrors(nextTravelerErrors);
     setDateErrors(nextDateErrors);
-    return nextTravelerErrors.every((e) => Object.keys(e).length === 0) && Object.keys(nextDateErrors).length === 0;
+    const valid = nextTravelerErrors.every((e) => Object.keys(e).length === 0) && Object.keys(nextDateErrors).length === 0;
+    if (!valid) {
+      const ids: string[] = [];
+      if (nextDateErrors.checkInDate) ids.push('field-checkInDate');
+      if (nextDateErrors.checkOutDate) ids.push('field-checkOutDate');
+      nextTravelerErrors.forEach((errs, idx) => {
+        (['firstName', 'lastName', 'dateOfBirth', 'nationality', 'idNumber'] as const).forEach((field) => {
+          if (errs[field]) ids.push(`traveler-${idx}-${field}`);
+        });
+      });
+      scrollToFirstError(ids);
+      setStepWarning(gi.errors.fixHighlighted);
+    }
+    return valid;
   };
 
   const validateUpload = () => {
@@ -404,7 +434,13 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
       return '';
     });
     setUploadErrors(nextErrors);
-    return nextErrors.every((e) => !e);
+    const valid = nextErrors.every((e) => !e);
+    if (!valid) {
+      const ids = nextErrors.map((e, idx) => (e ? `upload-${idx}` : null)).filter((id): id is string => id !== null);
+      scrollToFirstError(ids);
+      setStepWarning(gi.errors.fixHighlighted);
+    }
+    return valid;
   };
 
   const validateSignature = () => {
@@ -420,6 +456,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
   };
 
   const goNext = () => {
+    setStepWarning('');
     if (step === 'personal' && !validatePersonal()) return;
     if (step === 'upload' && !validateUpload()) return;
     const idx = STEPS.indexOf(step);
@@ -430,6 +467,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
   };
 
   const goBack = () => {
+    setStepWarning('');
     const idx = STEPS.indexOf(step);
     if (idx > 0) setStep(STEPS[idx - 1]);
   };
@@ -542,11 +580,8 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
           </section>
 
           <div className="print-hidden text-center">
-          <button
-            onClick={() => { setForm({ ...emptyForm(), travelers: [emptyTraveler(detectedCountry)] }); setStep('personal'); setSubmitted(false); setRegistrationId(''); setTravelerErrors([{}]); setUploadErrors(['']); }}
-            className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors">
-            {gi.success.newGuest}
-          </button>
+            <PrintButton label={gi.success.printDocument}
+              className="print-hidden inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-700" />
           </div>
         </div>
       </div>
@@ -574,7 +609,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-gray-800">{gi.personal.heading}</h2>
                 <div className="grid gap-4 p-4 sm:grid-cols-2 bg-primary-50 rounded-xl border border-primary-100">
-                  <Field label={gi.personal.checkInDate} error={dateErrors.checkInDate}>
+                  <Field id="field-checkInDate" label={gi.personal.checkInDate} error={dateErrors.checkInDate}>
                     <input type="date" min={todayDate()} value={form.checkInDate}
                       onChange={(e) => {
                         const checkInDate = e.target.value;
@@ -586,12 +621,13 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                             : previous.checkOutDate,
                         }));
                         setDateErrors((previous) => ({ ...previous, checkInDate: undefined, checkOutDate: undefined }));
+                        setStepWarning('');
                       }}
                       className={inputCls(!!dateErrors.checkInDate)} />
                   </Field>
-                  <Field label={gi.personal.checkOutDate} error={dateErrors.checkOutDate}>
+                  <Field id="field-checkOutDate" label={gi.personal.checkOutDate} error={dateErrors.checkOutDate}>
                     <input type="date" min={form.checkInDate ? dayAfter(form.checkInDate) : dayAfter(todayDate())} value={form.checkOutDate}
-                      onChange={(e) => { setForm((p) => ({ ...p, checkOutDate: e.target.value })); setDateErrors((p) => ({ ...p, checkOutDate: undefined })); }}
+                      onChange={(e) => { setForm((p) => ({ ...p, checkOutDate: e.target.value })); setDateErrors((p) => ({ ...p, checkOutDate: undefined })); setStepWarning(''); }}
                       className={inputCls(!!dateErrors.checkOutDate)} />
                   </Field>
                 </div>
@@ -613,7 +649,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                       )}
                     </div>
                     <div className="p-5">
-                      <TravelerFields traveler={traveler} errors={travelerErrors[idx] ?? {}}
+                      <TravelerFields idx={idx} traveler={traveler} errors={travelerErrors[idx] ?? {}}
                         onChange={(field, value) => updateTraveler(idx, field, value)}
                         labels={gi.personal} countries={countries} />
                     </div>
@@ -637,7 +673,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                   <p className="text-sm text-gray-500">{gi.upload.instruction}</p>
                 </div>
                 {form.travelers.map((traveler, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div key={idx} id={`upload-${idx}`} className="border border-gray-200 rounded-xl overflow-hidden">
                     <div className={`px-4 py-2.5 ${idx === 0 ? 'bg-primary-600' : 'bg-gray-700'}`}>
                       <span className="text-sm font-semibold text-white">
                         {idx === 0 ? gi.multi.mainTraveler : `${gi.multi.traveler} ${idx + 1}`}
@@ -706,6 +742,14 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
               </div>
             )}
 
+            {stepWarning && (
+              <p role="alert" className="mt-6 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                <svg aria-hidden="true" className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM21 12a9 9 0 11-18 0 9 9 0 0118 0Z" />
+                </svg>
+                {stepWarning}
+              </p>
+            )}
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between mt-8 pt-6 border-t border-gray-100">
               <button type="button" onClick={goBack} disabled={step === 'personal'}
                 className="px-5 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none transition-colors">
