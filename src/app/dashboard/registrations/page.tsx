@@ -15,6 +15,7 @@ interface Traveler {
 
 interface Registration {
   id: string;
+  property_id: string | null;
   check_in_date: string;
   check_out_date: string;
   created_at: string;
@@ -31,15 +32,16 @@ export default async function DashboardRegistrationsPage() {
 
   const { data: properties } = await db
     .from('properties')
-    .select('id')
-    .eq('owner_id', user.id);
+    .select('id, name')
+    .eq('owner_id', user.id)
+    .order('name');
 
   const propertyIds = (properties ?? []).map((p: { id: string }) => p.id);
 
   const { data: registrations } = propertyIds.length
     ? await db
         .from('guest_registrations')
-        .select('id, check_in_date, check_out_date, created_at, properties(name), travelers(*)')
+        .select('id, property_id, check_in_date, check_out_date, created_at, properties(name), travelers(*)')
         .in('property_id', propertyIds)
         .order('created_at', { ascending: false })
     : { data: [] };
@@ -59,7 +61,7 @@ export default async function DashboardRegistrationsPage() {
       {rows.length === 0 ? (
         <p className="text-gray-500">No guest registrations yet.</p>
       ) : (
-        <RegistrationsFilter registrations={rows} />
+        <RegistrationsFilter registrations={rows} properties={properties ?? []} />
       )}
     </div>
   );
