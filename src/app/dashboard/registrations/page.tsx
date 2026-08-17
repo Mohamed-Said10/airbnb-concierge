@@ -18,6 +18,7 @@ interface Registration {
   property_id: string | null;
   check_in_date: string;
   check_out_date: string;
+  children_count: number;
   created_at: string;
   properties: { name: string } | null;
   travelers: Traveler[];
@@ -41,7 +42,7 @@ export default async function DashboardRegistrationsPage() {
   const { data: registrations } = propertyIds.length
     ? await db
         .from('guest_registrations')
-        .select('id, property_id, check_in_date, check_out_date, created_at, properties(name), travelers(*)')
+        .select('id, property_id, check_in_date, check_out_date, children_count, created_at, properties(name), travelers(*)')
         .in('property_id', propertyIds)
         .order('created_at', { ascending: false })
     : { data: [] };
