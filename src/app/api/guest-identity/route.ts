@@ -33,6 +33,10 @@ export async function POST(req: NextRequest) {
     const travelersJson = formData.get('travelers') as string;
     const propertyRef = (formData.get('propertyRef') as string) || null;
     const propertyId = (formData.get('propertyId') as string) || null;
+    const childrenCountRaw = Number(formData.get('childrenCount'));
+    const childrenCount = Number.isInteger(childrenCountRaw) && childrenCountRaw >= 0 && childrenCountRaw <= 10
+      ? childrenCountRaw
+      : 0;
 
     if (
       !checkInDate ||
@@ -101,6 +105,7 @@ export async function POST(req: NextRequest) {
       .insert({
         check_in_date: checkInDate,
         check_out_date: checkOutDate,
+        children_count: childrenCount,
         signature_url: sigUrlData.publicUrl,
         property_ref: propertyRef,
         property_id: propertyId,
@@ -206,6 +211,7 @@ export async function POST(req: NextRequest) {
           <p><strong>Registration ID:</strong> ${registration.id}</p>
           <p><strong>Check-in:</strong> ${checkInDate}</p>
           <p><strong>Check-out:</strong> ${checkOutDate}</p>
+          ${childrenCount > 0 ? `<p><strong>Children:</strong> ${childrenCount}</p>` : ''}
           ${propertyRef ? `<p><strong>Property:</strong> ${propertyRef}</p>` : ''}
           <h3>Travelers (${travelers.length})</h3>
           <ul>

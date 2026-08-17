@@ -3,13 +3,17 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useLanguage } from '@/context/LanguageContext';
-import type { GuestRegistrationData, TravelerData, TravelerErrors, FormStep, IdDocumentType } from '@/types/guest-identity';
+import type { GuestRegistrationData, TravelerData, TravelerErrors, Phase, IdDocumentType } from '@/types/guest-identity';
 import { countryOptions } from '@/data/countries';
 import PrintButton from '@/components/PrintButton';
+import BookingDatePicker, { type BookedRange } from '@/components/BookingDatePicker';
 
 const SignaturePad = dynamic(() => import('@/components/SignaturePad'), { ssr: false });
 
-const STEPS: FormStep[] = ['personal', 'upload', 'signature'];
+const PHASES: Phase[] = ['intro', 'traveler', 'signature'];
+const MIN_TRAVELERS = 1;
+const MAX_TRAVELERS = 10;
+const MAX_CHILDREN = 10;
 
 const emptyTraveler = (nationality = ''): TravelerData => ({
   firstName: '', lastName: '', dateOfBirth: '', placeOfBirth: '',
@@ -18,27 +22,29 @@ const emptyTraveler = (nationality = ''): TravelerData => ({
 });
 
 const emptyForm = (): GuestRegistrationData => ({
-  travelers: [emptyTraveler()],
+  travelers: [],
   checkInDate: '',
   checkOutDate: '',
+  childrenCount: 0,
   signature: '',
 });
 
 // ─── Step Indicator ───────────────────────────────────────────────────────────
 
-const StepIndicator = ({ currentStep, labels }: {
-  currentStep: FormStep;
-  labels: { personal: string; upload: string; signature: string };
+const StepIndicator = ({ phase, travelerProgress, labels }: {
+  phase: Phase;
+  travelerProgress?: string;
+  labels: { intro: string; traveler: string; signature: string };
 }) => {
-  const idx = STEPS.indexOf(currentStep);
+  const idx = PHASES.indexOf(phase);
   return (
     <nav aria-label="Progress" className="mb-10">
       <ol className="flex items-center justify-between">
-        {STEPS.map((step, i) => {
+        {PHASES.map((p, i) => {
           const done = i < idx;
           const active = i === idx;
           return (
-            <li key={step} className="flex-1 flex items-center">
+            <li key={p} className="flex-1 flex items-center">
               <div className="flex flex-col items-center w-full">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors
                   ${done ? 'bg-primary-600 border-primary-600 text-white' : active ? 'border-primary-600 text-primary-600 bg-white' : 'border-gray-300 text-gray-400 bg-white'}`}>
@@ -47,10 +53,10 @@ const StepIndicator = ({ currentStep, labels }: {
                     : i + 1}
                 </div>
                 <span className={`mt-2 text-xs font-medium text-center ${active ? 'text-primary-600' : done ? 'text-gray-700' : 'text-gray-400'}`}>
-                  {labels[step]}
+                  {labels[p]}{p === 'traveler' && active && travelerProgress ? ` (${travelerProgress})` : ''}
                 </span>
               </div>
-              {i < STEPS.length - 1 && (
+              {i < PHASES.length - 1 && (
                 <div className={`flex-1 h-0.5 mx-2 mb-5 ${done ? 'bg-primary-600' : 'bg-gray-200'}`} />
               )}
             </li>
@@ -89,6 +95,55 @@ const TrustBanner = ({ heading, subtitle, items }: { heading: string; subtitle: 
     </div>
   </div>
 );
+
+// ─── Property Gallery ─────────────────────────────────────────────────────────
+
+// Photos arrive pre-sorted (oldest upload first) via sort_order, so slide 1 is
+// always the first photo the owner uploaded and the last slide is the most recent.
+const PropertyGallery = ({ photos }: { photos: string[] }) => {
+  const [index, setIndex] = useState(0);
+  if (!photos.length) return null;
+  const goPrev = () => setIndex((i) => (i - 1 + photos.length) % photos.length);
+  const goNext = () => setIndex((i) => (i + 1) % photos.length);
+  return (
+    <div className="print-hidden mb-6">
+      <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-gray-900 shadow-sm">
+        {/* Blurred backdrop of the same photo fills the frame, so the photo below can use
+            object-contain (nothing cropped) without leaving bare letterboxing bars. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[index]} alt="" aria-hidden="true"
+          className="absolute inset-0 h-56 w-full scale-110 object-cover object-center opacity-50 blur-2xl sm:h-80" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photos[index]} alt="" className="relative h-56 w-full object-contain sm:h-80" />
+        {photos.length > 1 && (
+          <>
+            <button type="button" onClick={goPrev} aria-label="Previous photo"
+              className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow transition-colors hover:bg-white">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button type="button" onClick={goNext} aria-label="Next photo"
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow transition-colors hover:bg-white">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            <span className="absolute right-2 top-2 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
+              {index + 1}/{photos.length}
+            </span>
+            <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+              {photos.map((_, dot) => (
+                <button key={dot} type="button" onClick={() => setIndex(dot)} aria-label={`Go to photo ${dot + 1}`}
+                  className={`h-1.5 rounded-full transition-all ${dot === index ? 'w-4 bg-white' : 'w-1.5 bg-white/60'}`} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // ─── Photo Upload ─────────────────────────────────────────────────────────────
 
@@ -301,9 +356,10 @@ const Field = ({ label, error, id, children }: { label: string; error?: string; 
 interface Props {
   propertyId?: string;
   propertyName?: string;
+  propertyPhotos?: string[];
 }
 
-export default function GuestRegistrationForm({ propertyId, propertyName }: Props) {
+export default function GuestRegistrationForm({ propertyId, propertyName, propertyPhotos }: Props) {
   const { t, language } = useLanguage();
   const gi = t.guestIdentity;
   // Intl.DisplayNames/localeCompare can resolve differently between the server's ICU
@@ -313,11 +369,17 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
   useEffect(() => { setCountries(countryOptions(language)); }, [language]);
   const [detectedCountry, setDetectedCountry] = useState('');
 
-  const [step, setStep] = useState<FormStep>('personal');
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [travelerIndex, setTravelerIndex] = useState(0);
   const [form, setForm] = useState<GuestRegistrationData>(emptyForm());
+  const [travelerCountInput, setTravelerCountInput] = useState('1');
+  const [childrenCountInput, setChildrenCountInput] = useState('0');
   const [dateErrors, setDateErrors] = useState<{ checkInDate?: string; checkOutDate?: string }>({});
-  const [travelerErrors, setTravelerErrors] = useState<TravelerErrors[]>([{}]);
-  const [uploadErrors, setUploadErrors] = useState<string[]>(['']);
+  const [countErrors, setCountErrors] = useState<{ travelerCount?: string; childrenCount?: string }>({});
+  const [availability, setAvailability] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle');
+  const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
+  const [travelerErrors, setTravelerErrors] = useState<TravelerErrors[]>([]);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [sigError, setSigError] = useState('');
   const [stepWarning, setStepWarning] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -329,18 +391,54 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     fetch('/api/location')
       .then((response) => response.json())
       .then(({ countryCode }: { countryCode: string }) => {
-        if (!active || !countryCode) return;
-        setDetectedCountry(countryCode);
-        setForm((previous) => ({
-          ...previous,
-          travelers: previous.travelers.map((traveler) =>
-            traveler.nationality ? traveler : { ...traveler, nationality: countryCode }
-          ),
-        }));
+        if (active && countryCode) setDetectedCountry(countryCode);
       })
       .catch(() => undefined);
     return () => { active = false; };
   }, []);
+
+  // Live availability check as the guest picks dates. This is a UX preview only —
+  // startTravelers() re-checks authoritatively before letting them proceed, so a
+  // stale or in-flight result here can never let an unavailable stay through.
+  useEffect(() => {
+    if (!propertyId || !form.checkInDate || !form.checkOutDate || form.checkOutDate <= form.checkInDate) {
+      setAvailability('idle');
+      return;
+    }
+    let active = true;
+    setAvailability('checking');
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams({ propertyId, from: form.checkInDate, to: form.checkOutDate });
+      fetch(`/api/availability?${params.toString()}`)
+        .then((response) => response.json())
+        .then((result: { available?: boolean }) => {
+          if (active) setAvailability(result.available ? 'available' : 'unavailable');
+        })
+        .catch(() => { if (active) setAvailability('idle'); });
+    }, 400);
+    return () => { active = false; clearTimeout(timer); };
+  }, [propertyId, form.checkInDate, form.checkOutDate]);
+
+  // Booked date ranges for the calendar pickers, so guests see (and can't pick)
+  // occupied days up front instead of finding out only after choosing dates.
+  useEffect(() => {
+    if (!propertyId) return;
+    let active = true;
+    fetch(`/api/availability?propertyId=${encodeURIComponent(propertyId)}`)
+      .then((response) => response.json())
+      .then((result: { bookedRanges?: BookedRange[] }) => {
+        if (active) setBookedRanges(result.bookedRanges ?? []);
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [propertyId]);
+
+  // The furthest a checkout can reach without crossing into another reservation:
+  // the earliest start date among booked ranges that end after check-in.
+  const checkoutMaxDate = bookedRanges.reduce<string | undefined>((max, range) => {
+    if (range.end <= form.checkInDate) return max;
+    return !max || range.start < max ? range.start : max;
+  }, undefined);
 
   const updateTraveler = (idx: number, field: keyof TravelerData, value: string | File | null | IdDocumentType) => {
     setForm((prev) => {
@@ -356,18 +454,6 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     setStepWarning('');
   };
 
-  const addTraveler = () => {
-    setForm((prev) => ({ ...prev, travelers: [...prev.travelers, emptyTraveler(detectedCountry)] }));
-    setTravelerErrors((prev) => [...prev, {}]);
-    setUploadErrors((prev) => [...prev, '']);
-  };
-
-  const removeTraveler = (idx: number) => {
-    setForm((prev) => ({ ...prev, travelers: prev.travelers.filter((_, i) => i !== idx) }));
-    setTravelerErrors((prev) => prev.filter((_, i) => i !== idx));
-    setUploadErrors((prev) => prev.filter((_, i) => i !== idx));
-  };
-
   const scrollToFirstError = (ids: string[]) => {
     const targetId = ids[0];
     if (!targetId) return;
@@ -379,25 +465,9 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     });
   };
 
-  const validatePersonal = () => {
-    const required: (keyof TravelerData)[] = ['firstName', 'lastName', 'dateOfBirth', 'nationality', 'idNumber'];
-    const nextTravelerErrors = form.travelers.map((t) => {
-      const errs: TravelerErrors = {};
-      required.forEach((f) => { if (!t[f]) errs[f] = gi.errors.required; });
-      if (t.firstName && (t.firstName.trim().length < 2 || t.firstName.length > 100)) {
-        errs.firstName = gi.errors.invalidName;
-      }
-      if (t.lastName && (t.lastName.trim().length < 2 || t.lastName.length > 100)) {
-        errs.lastName = gi.errors.invalidName;
-      }
-      if (t.dateOfBirth && (t.dateOfBirth < '1900-01-01' || t.dateOfBirth > minimumAdultBirthDate())) {
-        errs.dateOfBirth = gi.errors.minimumAge;
-      }
-      if (t.idNumber && (t.idNumber.trim().length < 3 || t.idNumber.length > 50)) {
-        errs.idNumber = gi.errors.invalidDocument;
-      }
-      return errs;
-    });
+  const REQUIRED_TRAVELER_FIELDS: (keyof TravelerData)[] = ['firstName', 'lastName', 'dateOfBirth', 'nationality', 'idNumber'];
+
+  const validateIntro = () => {
     const nextDateErrors: typeof dateErrors = {};
     if (!form.checkInDate) nextDateErrors.checkInDate = gi.errors.required;
     if (!form.checkOutDate) nextDateErrors.checkOutDate = gi.errors.required;
@@ -407,36 +477,103 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     if (form.checkInDate && form.checkOutDate && form.checkOutDate <= form.checkInDate) {
       nextDateErrors.checkOutDate = gi.errors.invalidStayDates;
     }
-    setTravelerErrors(nextTravelerErrors);
+
+    const travelerCount = Number(travelerCountInput);
+    const childrenCount = Number(childrenCountInput);
+    const nextCountErrors: typeof countErrors = {};
+    if (!Number.isInteger(travelerCount) || travelerCount < MIN_TRAVELERS || travelerCount > MAX_TRAVELERS) {
+      nextCountErrors.travelerCount = gi.errors.invalidTravelerCount;
+    }
+    if (!Number.isInteger(childrenCount) || childrenCount < 0 || childrenCount > MAX_CHILDREN) {
+      nextCountErrors.childrenCount = gi.errors.invalidChildrenCount;
+    }
+
     setDateErrors(nextDateErrors);
-    const valid = nextTravelerErrors.every((e) => Object.keys(e).length === 0) && Object.keys(nextDateErrors).length === 0;
+    setCountErrors(nextCountErrors);
+    const valid = Object.keys(nextDateErrors).length === 0 && Object.keys(nextCountErrors).length === 0;
     if (!valid) {
       const ids: string[] = [];
       if (nextDateErrors.checkInDate) ids.push('field-checkInDate');
       if (nextDateErrors.checkOutDate) ids.push('field-checkOutDate');
-      nextTravelerErrors.forEach((errs, idx) => {
-        (['firstName', 'lastName', 'dateOfBirth', 'nationality', 'idNumber'] as const).forEach((field) => {
-          if (errs[field]) ids.push(`traveler-${idx}-${field}`);
-        });
-      });
+      if (nextCountErrors.travelerCount) ids.push('field-travelerCount');
+      if (nextCountErrors.childrenCount) ids.push('field-childrenCount');
       scrollToFirstError(ids);
       setStepWarning(gi.errors.fixHighlighted);
     }
     return valid;
   };
 
-  const validateUpload = () => {
-    const nextErrors = form.travelers.map((t) => {
-      if (!t.idFrontPhoto) return gi.errors.photoRequired;
-      if (!isValidIdPhoto(t.idFrontPhoto) || (t.idBackPhoto && !isValidIdPhoto(t.idBackPhoto))) {
-        return gi.errors.invalidPhoto;
+  const checkAvailability = async (from: string, to: string): Promise<boolean> => {
+    if (!propertyId) return true;
+    try {
+      const params = new URLSearchParams({ propertyId, from, to });
+      const response = await fetch(`/api/availability?${params.toString()}`);
+      if (!response.ok) return true;
+      const result = await response.json() as { available?: boolean };
+      return result.available !== false;
+    } catch {
+      return true;
+    }
+  };
+
+  const startTravelers = async () => {
+    setStepWarning('');
+    if (!validateIntro()) return;
+    if (propertyId) {
+      setAvailability('checking');
+      const available = await checkAvailability(form.checkInDate, form.checkOutDate);
+      setAvailability(available ? 'available' : 'unavailable');
+      if (!available) {
+        setDateErrors((prev) => ({ ...prev, checkOutDate: gi.errors.datesUnavailable }));
+        scrollToFirstError(['field-checkInDate']);
+        setStepWarning(gi.errors.fixHighlighted);
+        return;
       }
-      return '';
-    });
-    setUploadErrors(nextErrors);
-    const valid = nextErrors.every((e) => !e);
+    }
+    const count = Number(travelerCountInput);
+    setForm((prev) => ({
+      ...prev,
+      travelers: Array.from({ length: count }, (_, i) => prev.travelers[i] ?? emptyTraveler(detectedCountry)),
+      childrenCount: Number(childrenCountInput),
+    }));
+    setTravelerErrors((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? {}));
+    setUploadErrors((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? ''));
+    setTravelerIndex(0);
+    setPhase('traveler');
+    showPageTop();
+  };
+
+  const validateTravelerStep = (idx: number) => {
+    const t = form.travelers[idx];
+    const errs: TravelerErrors = {};
+    REQUIRED_TRAVELER_FIELDS.forEach((f) => { if (!t[f]) errs[f] = gi.errors.required; });
+    if (t.firstName && (t.firstName.trim().length < 2 || t.firstName.length > 100)) {
+      errs.firstName = gi.errors.invalidName;
+    }
+    if (t.lastName && (t.lastName.trim().length < 2 || t.lastName.length > 100)) {
+      errs.lastName = gi.errors.invalidName;
+    }
+    if (t.dateOfBirth && (t.dateOfBirth < '1900-01-01' || t.dateOfBirth > minimumAdultBirthDate())) {
+      errs.dateOfBirth = gi.errors.minimumAge;
+    }
+    if (t.idNumber && (t.idNumber.trim().length < 3 || t.idNumber.length > 50)) {
+      errs.idNumber = gi.errors.invalidDocument;
+    }
+
+    let uploadErr = '';
+    if (!t.idFrontPhoto) uploadErr = gi.errors.photoRequired;
+    else if (!isValidIdPhoto(t.idFrontPhoto) || (t.idBackPhoto && !isValidIdPhoto(t.idBackPhoto))) {
+      uploadErr = gi.errors.invalidPhoto;
+    }
+
+    setTravelerErrors((prev) => { const next = [...prev]; next[idx] = errs; return next; });
+    setUploadErrors((prev) => { const next = [...prev]; next[idx] = uploadErr; return next; });
+
+    const valid = Object.keys(errs).length === 0 && !uploadErr;
     if (!valid) {
-      const ids = nextErrors.map((e, idx) => (e ? `upload-${idx}` : null)).filter((id): id is string => id !== null);
+      const ids: string[] = [];
+      REQUIRED_TRAVELER_FIELDS.forEach((field) => { if (errs[field]) ids.push(`traveler-${idx}-${field}`); });
+      if (uploadErr) ids.push(`upload-${idx}`);
       scrollToFirstError(ids);
       setStepWarning(gi.errors.fixHighlighted);
     }
@@ -455,21 +592,30 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
     });
   };
 
-  const goNext = () => {
+  const handleNext = async () => {
     setStepWarning('');
-    if (step === 'personal' && !validatePersonal()) return;
-    if (step === 'upload' && !validateUpload()) return;
-    const idx = STEPS.indexOf(step);
-    if (idx < STEPS.length - 1) {
-      setStep(STEPS[idx + 1]);
+    if (phase === 'intro') { await startTravelers(); return; }
+    if (phase === 'traveler') {
+      if (!validateTravelerStep(travelerIndex)) return;
+      if (travelerIndex < form.travelers.length - 1) {
+        setTravelerIndex((i) => i + 1);
+      } else {
+        setPhase('signature');
+      }
       showPageTop();
     }
   };
 
-  const goBack = () => {
+  const handleBack = () => {
     setStepWarning('');
-    const idx = STEPS.indexOf(step);
-    if (idx > 0) setStep(STEPS[idx - 1]);
+    if (phase === 'traveler') {
+      if (travelerIndex > 0) setTravelerIndex((i) => i - 1);
+      else setPhase('intro');
+    } else if (phase === 'signature') {
+      setPhase('traveler');
+      setTravelerIndex(form.travelers.length - 1);
+    }
+    showPageTop();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -481,6 +627,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
       const fd = new FormData();
       fd.append('checkInDate', form.checkInDate);
       fd.append('checkOutDate', form.checkOutDate);
+      fd.append('childrenCount', String(form.childrenCount));
       fd.append('signature', form.signature);
       if (propertyId) fd.append('propertyId', propertyId);
 
@@ -512,6 +659,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
       const result = await res.json() as { registrationId?: string };
       setRegistrationId(result.registrationId ?? '');
       setSubmitted(true);
+      showPageTop();
     } catch (error) {
       setSigError(error instanceof Error && error.message === 'PAYLOAD_TOO_LARGE'
         ? gi.errors.payloadTooLarge
@@ -556,6 +704,8 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
             <h3 className="mb-3 font-semibold text-gray-900">{gi.signatureStep.reviewHeading}</h3>
             <ReviewRow label={gi.personal.checkInDate} value={form.checkInDate} />
             <ReviewRow label={gi.personal.checkOutDate} value={form.checkOutDate} />
+            <ReviewRow label={gi.personal.travelersCount} value={String(form.travelers.length)} />
+            <ReviewRow label={gi.personal.childrenCount} value={String(form.childrenCount)} />
             {propertyName && <ReviewRow label="Property" value={propertyName} />}
           </section>
 
@@ -600,107 +750,98 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
           <p className="mt-3 text-xs text-gray-400 italic">{gi.legalNote}</p>
         </div>
 
+        <PropertyGallery photos={propertyPhotos ?? []} />
+
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8">
-          <StepIndicator currentStep={step}
-            labels={{ personal: gi.steps.personalInfo, upload: gi.steps.idUpload, signature: gi.steps.signature }} />
+          <StepIndicator phase={phase}
+            travelerProgress={form.travelers.length > 1 ? `${travelerIndex + 1}/${form.travelers.length}` : undefined}
+            labels={{ intro: gi.steps.tripDetails, traveler: gi.steps.travelerInfo, signature: gi.steps.signature }} />
 
           <form onSubmit={handleSubmit} noValidate>
-            {step === 'personal' && (
+            {phase === 'intro' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-bold text-gray-800">{gi.personal.heading}</h2>
+                <h2 className="text-lg font-bold text-gray-800">{gi.intro.heading}</h2>
                 <div className="grid gap-4 p-4 sm:grid-cols-2 bg-primary-50 rounded-xl border border-primary-100">
-                  <Field id="field-checkInDate" label={gi.personal.checkInDate} error={dateErrors.checkInDate}>
-                    <input type="date" min={todayDate()} value={form.checkInDate}
-                      onChange={(e) => {
-                        const checkInDate = e.target.value;
-                        setForm((previous) => ({
-                          ...previous,
-                          checkInDate,
-                          checkOutDate: previous.checkOutDate && previous.checkOutDate <= checkInDate
-                            ? ''
-                            : previous.checkOutDate,
-                        }));
-                        setDateErrors((previous) => ({ ...previous, checkInDate: undefined, checkOutDate: undefined }));
-                        setStepWarning('');
-                      }}
-                      className={inputCls(!!dateErrors.checkInDate)} />
+                  <BookingDatePicker id="field-checkInDate" label={gi.personal.checkInDate} placeholder={gi.intro.selectDate}
+                    value={form.checkInDate} minDate={todayDate()} bookedRanges={bookedRanges} error={dateErrors.checkInDate} locale={language}
+                    onChange={(checkInDate) => {
+                      setForm((previous) => ({
+                        ...previous,
+                        checkInDate,
+                        checkOutDate: previous.checkOutDate && previous.checkOutDate <= checkInDate ? '' : previous.checkOutDate,
+                      }));
+                      setDateErrors((previous) => ({ ...previous, checkInDate: undefined, checkOutDate: undefined }));
+                      setStepWarning('');
+                    }} />
+                  <BookingDatePicker id="field-checkOutDate" label={gi.personal.checkOutDate} placeholder={gi.intro.selectDate}
+                    value={form.checkOutDate} minDate={form.checkInDate ? dayAfter(form.checkInDate) : dayAfter(todayDate())}
+                    maxDate={checkoutMaxDate} blockBookedDays={false} bookedRanges={bookedRanges} error={dateErrors.checkOutDate} locale={language}
+                    onChange={(checkOutDate) => { setForm((p) => ({ ...p, checkOutDate })); setDateErrors((p) => ({ ...p, checkOutDate: undefined })); setStepWarning(''); }} />
+                </div>
+                {propertyId && availability !== 'idle' && (
+                  <p className={`flex items-center gap-1.5 text-xs font-medium ${
+                    availability === 'available' ? 'text-green-700' : availability === 'unavailable' ? 'text-red-600' : 'text-gray-500'
+                  }`}>
+                    {availability === 'checking' && gi.intro.checkingAvailability}
+                    {availability === 'available' && `✓ ${gi.intro.availableDates}`}
+                    {availability === 'unavailable' && `⚠ ${gi.errors.datesUnavailable}`}
+                  </p>
+                )}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field id="field-travelerCount" label={gi.intro.travelersLabel} error={countErrors.travelerCount}>
+                    <input type="number" min={MIN_TRAVELERS} max={MAX_TRAVELERS} value={travelerCountInput}
+                      onChange={(e) => { setTravelerCountInput(e.target.value); setCountErrors((p) => ({ ...p, travelerCount: undefined })); setStepWarning(''); }}
+                      className={inputCls(!!countErrors.travelerCount)} />
                   </Field>
-                  <Field id="field-checkOutDate" label={gi.personal.checkOutDate} error={dateErrors.checkOutDate}>
-                    <input type="date" min={form.checkInDate ? dayAfter(form.checkInDate) : dayAfter(todayDate())} value={form.checkOutDate}
-                      onChange={(e) => { setForm((p) => ({ ...p, checkOutDate: e.target.value })); setDateErrors((p) => ({ ...p, checkOutDate: undefined })); setStepWarning(''); }}
-                      className={inputCls(!!dateErrors.checkOutDate)} />
+                  <Field id="field-childrenCount" label={gi.intro.childrenLabel} error={countErrors.childrenCount}>
+                    <input type="number" min={0} max={MAX_CHILDREN} value={childrenCountInput}
+                      onChange={(e) => { setChildrenCountInput(e.target.value); setCountErrors((p) => ({ ...p, childrenCount: undefined })); setStepWarning(''); }}
+                      className={inputCls(!!countErrors.childrenCount)} />
                   </Field>
                 </div>
-                {form.travelers.map((traveler, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden">
-                    <div className={`flex items-center justify-between px-4 py-3 ${idx === 0 ? 'bg-primary-600' : 'bg-gray-700'}`}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold">{idx + 1}</div>
-                        <span className="text-sm font-semibold text-white">
-                          {idx === 0 ? gi.multi.mainTraveler : `${gi.multi.traveler} ${idx + 1}`}
-                          {travelerName(traveler) ? ` — ${travelerName(traveler)}` : ''}
-                        </span>
-                      </div>
-                      {idx > 0 && (
-                        <button type="button" onClick={() => removeTraveler(idx)}
-                          className="text-white/70 hover:text-red-300 text-xs underline transition-colors">
-                          {gi.multi.removeTraveler}
-                        </button>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <TravelerFields idx={idx} traveler={traveler} errors={travelerErrors[idx] ?? {}}
-                        onChange={(field, value) => updateTraveler(idx, field, value)}
-                        labels={gi.personal} countries={countries} />
-                    </div>
-                  </div>
-                ))}
-                <button type="button" onClick={addTraveler}
-                  className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-primary-300 text-primary-600 hover:border-primary-500 hover:bg-primary-50 rounded-xl py-3 text-sm font-semibold transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  {gi.multi.addTraveler}
-                </button>
+                <p className="text-xs text-gray-500">{gi.intro.travelersHint}</p>
                 <TrustBanner heading={gi.trust.heading} subtitle={gi.trust.subtitle} items={gi.trust.items} />
               </div>
             )}
 
-            {step === 'upload' && (
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-800 mb-1">{gi.upload.heading}</h2>
-                  <p className="text-sm text-gray-500">{gi.upload.instruction}</p>
+            {phase === 'traveler' && form.travelers[travelerIndex] && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-gray-800">
+                    {travelerIndex === 0 ? gi.multi.mainTraveler : `${gi.multi.traveler} ${travelerIndex + 1}`}
+                  </h2>
+                  {form.travelers.length > 1 && (
+                    <span className="text-xs font-medium text-gray-400">
+                      {travelerIndex + 1} {gi.multi.of} {form.travelers.length}
+                    </span>
+                  )}
                 </div>
-                {form.travelers.map((traveler, idx) => (
-                  <div key={idx} id={`upload-${idx}`} className="border border-gray-200 rounded-xl overflow-hidden">
-                    <div className={`px-4 py-2.5 ${idx === 0 ? 'bg-primary-600' : 'bg-gray-700'}`}>
-                      <span className="text-sm font-semibold text-white">
-                        {idx === 0 ? gi.multi.mainTraveler : `${gi.multi.traveler} ${idx + 1}`}
-                        {travelerName(traveler) ? ` — ${travelerName(traveler)}` : ''}
-                      </span>
-                    </div>
-                    <div className="p-5 space-y-4">
-                      <PhotoUpload label={gi.upload.frontSide} file={traveler.idFrontPhoto}
-                        onChange={(f) => updateTraveler(idx, 'idFrontPhoto', f)}
-                        dragLabel={gi.upload.dragDrop}
-                        fileTypesLabel={gi.upload.fileTypes} previewLabel={gi.upload.preview}
-                        changeLabel={gi.upload.change} takePhotoLabel={gi.upload.takePhoto}
-                        chooseFileLabel={gi.upload.chooseFile} required />
-                      {uploadErrors[idx] && <p className="text-sm text-red-600 -mt-2">{uploadErrors[idx]}</p>}
-                      <PhotoUpload label={gi.upload.backSide} file={traveler.idBackPhoto}
-                        onChange={(f) => updateTraveler(idx, 'idBackPhoto', f)}
-                        dragLabel={gi.upload.dragDrop}
-                        fileTypesLabel={gi.upload.fileTypes} previewLabel={gi.upload.preview}
-                        changeLabel={gi.upload.change} takePhotoLabel={gi.upload.takePhoto}
-                        chooseFileLabel={gi.upload.chooseFile} />
-                    </div>
+                <TravelerFields idx={travelerIndex} traveler={form.travelers[travelerIndex]} errors={travelerErrors[travelerIndex] ?? {}}
+                  onChange={(field, value) => updateTraveler(travelerIndex, field, value)}
+                  labels={gi.personal} countries={countries} />
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-800 mb-1">{gi.upload.heading}</h3>
+                  <p className="text-sm text-gray-500 mb-4">{gi.upload.instruction}</p>
+                  <div id={`upload-${travelerIndex}`} className="space-y-4">
+                    <PhotoUpload label={gi.upload.frontSide} file={form.travelers[travelerIndex].idFrontPhoto}
+                      onChange={(f) => updateTraveler(travelerIndex, 'idFrontPhoto', f)}
+                      dragLabel={gi.upload.dragDrop}
+                      fileTypesLabel={gi.upload.fileTypes} previewLabel={gi.upload.preview}
+                      changeLabel={gi.upload.change} takePhotoLabel={gi.upload.takePhoto}
+                      chooseFileLabel={gi.upload.chooseFile} required />
+                    {uploadErrors[travelerIndex] && <p className="text-sm text-red-600 -mt-2">{uploadErrors[travelerIndex]}</p>}
+                    <PhotoUpload label={gi.upload.backSide} file={form.travelers[travelerIndex].idBackPhoto}
+                      onChange={(f) => updateTraveler(travelerIndex, 'idBackPhoto', f)}
+                      dragLabel={gi.upload.dragDrop}
+                      fileTypesLabel={gi.upload.fileTypes} previewLabel={gi.upload.preview}
+                      changeLabel={gi.upload.change} takePhotoLabel={gi.upload.takePhoto}
+                      chooseFileLabel={gi.upload.chooseFile} />
                   </div>
-                ))}
+                </div>
               </div>
             )}
 
-            {step === 'signature' && (
+            {phase === 'signature' && (
               <div className="space-y-6">
                 <h2 className="text-lg font-bold text-gray-800">{gi.signatureStep.heading}</h2>
                 <div className="space-y-4">
@@ -726,6 +867,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
                   <div className="bg-primary-50 rounded-xl p-4 border border-primary-100 grid gap-4 sm:grid-cols-2">
                     <ReviewRow label={gi.personal.checkInDate} value={form.checkInDate} />
                     <ReviewRow label={gi.personal.checkOutDate} value={form.checkOutDate} />
+                    {form.childrenCount > 0 && <ReviewRow label={gi.personal.childrenCount} value={String(form.childrenCount)} />}
                   </div>
                 </div>
                 <div>
@@ -751,14 +893,14 @@ export default function GuestRegistrationForm({ propertyId, propertyName }: Prop
               </p>
             )}
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between mt-8 pt-6 border-t border-gray-100">
-              <button type="button" onClick={goBack} disabled={step === 'personal'}
+              <button type="button" onClick={handleBack} disabled={phase === 'intro'}
                 className="px-5 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none transition-colors">
                 {gi.nav.back}
               </button>
-              {step !== 'signature' ? (
-                <button type="button" onClick={goNext}
-                  className="px-6 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 transition-colors">
-                  {gi.nav.next}
+              {phase !== 'signature' ? (
+                <button type="button" onClick={handleNext} disabled={phase === 'intro' && availability === 'checking'}
+                  className="px-6 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 disabled:opacity-70 transition-colors">
+                  {phase === 'intro' && availability === 'checking' ? gi.intro.checkingAvailability : gi.nav.next}
                 </button>
               ) : (
                 <button type="submit" disabled={submitting}

@@ -257,7 +257,16 @@ export const translations = {
       pageTitle: 'Guest Registration — Fiche de Police',
       pageSubtitle: 'As required by Moroccan law, please complete your registration form. Your information will be kept confidential and used solely for legal compliance.',
       legalNote: 'This form is required under Moroccan tourism regulations (Dahir n° 1-02-176).',
-      steps: { personalInfo: 'Personal Information', idUpload: 'ID Document', signature: 'Signature & Review' },
+      steps: { tripDetails: 'Trip Details', travelerInfo: 'Traveler Information', signature: 'Signature & Review' },
+      intro: {
+        heading: 'Trip Details',
+        travelersLabel: 'Number of travelers (18 and older)',
+        childrenLabel: 'Number of children (under 18)',
+        travelersHint: "You'll fill in one short form per traveler — it only takes a minute each.",
+        checkingAvailability: 'Checking availability…',
+        availableDates: 'Available for these dates.',
+        selectDate: 'Select a date',
+      },
       personal: {
         heading: 'Personal Information',
         firstName: 'First Name', lastName: 'Last Name', dateOfBirth: 'Date of Birth',
@@ -265,6 +274,7 @@ export const translations = {
         idTypes: { cin: 'National ID Card (CIN)', passport: 'Passport', residence: 'Residence Permit', other: 'Other' },
         idNumber: 'Document Number', idExpiryDate: 'Document Expiry Date',
         address: 'Permanent Address', checkInDate: 'Check-in Date', checkOutDate: 'Check-out Date',
+        travelersCount: 'Travelers', childrenCount: 'Children',
       },
       upload: {
         heading: 'Upload Your ID Document',
@@ -286,8 +296,7 @@ export const translations = {
       },
       nav: { next: 'Next', back: 'Back' },
       multi: {
-        mainTraveler: 'Main Traveler', traveler: 'Traveler',
-        addTraveler: '+ Add Another Traveler', removeTraveler: 'Remove traveler',
+        mainTraveler: 'Main Traveler', traveler: 'Traveler', of: 'of',
         guestsCount: 'guest(s) registered',
       },
       trust: {
@@ -318,6 +327,9 @@ export const translations = {
         payloadTooLarge: 'The combined ID images are too large. Remove optional back images or use smaller photos.',
         submissionFailed: 'Submission failed. Please try again.',
         fixHighlighted: 'Please correct the highlighted fields above before continuing.',
+        invalidTravelerCount: 'Enter a number between 1 and 10.',
+        invalidChildrenCount: 'Enter a number between 0 and 10.',
+        datesUnavailable: 'This property is not available for the selected dates. Please choose different dates.',
       },
     },
   },
@@ -577,7 +589,16 @@ export const translations = {
       pageTitle: 'Enregistrement des clients — Fiche de Police',
       pageSubtitle: "Conformément à la législation marocaine, veuillez remplir votre fiche d'enregistrement. Vos informations resteront confidentielles et seront utilisées uniquement à des fins légales.",
       legalNote: 'Ce formulaire est exigé par la réglementation touristique marocaine (Dahir n° 1-02-176).',
-      steps: { personalInfo: 'Informations personnelles', idUpload: "Document d'identité", signature: 'Signature & Validation' },
+      steps: { tripDetails: 'Détails du séjour', travelerInfo: 'Informations voyageurs', signature: 'Signature & Validation' },
+      intro: {
+        heading: 'Détails du séjour',
+        travelersLabel: 'Nombre de voyageurs (18 ans et plus)',
+        childrenLabel: 'Nombre d’enfants (moins de 18 ans)',
+        travelersHint: 'Vous remplirez un court formulaire par voyageur — cela ne prend qu’une minute chacun.',
+        checkingAvailability: 'Vérification de la disponibilité…',
+        availableDates: 'Disponible pour ces dates.',
+        selectDate: 'Sélectionner une date',
+      },
       personal: {
         heading: 'Informations personnelles',
         firstName: 'Prénom', lastName: 'Nom', dateOfBirth: 'Date de naissance',
@@ -585,6 +606,7 @@ export const translations = {
         idTypes: { cin: "Carte Nationale d'Identité (CIN)", passport: 'Passeport', residence: 'Titre de séjour', other: 'Autre' },
         idNumber: 'Numéro du document', idExpiryDate: "Date d'expiration du document",
         address: 'Adresse permanente', checkInDate: "Date d'arrivée", checkOutDate: 'Date de départ',
+        travelersCount: 'Voyageurs', childrenCount: 'Enfants',
       },
       upload: {
         heading: "Télécharger votre document d'identité",
@@ -606,8 +628,7 @@ export const translations = {
       },
       nav: { next: 'Suivant', back: 'Retour' },
       multi: {
-        mainTraveler: 'Voyageur principal', traveler: 'Voyageur',
-        addTraveler: '+ Ajouter un autre voyageur', removeTraveler: 'Supprimer le voyageur',
+        mainTraveler: 'Voyageur principal', traveler: 'Voyageur', of: 'sur',
         guestsCount: 'voyageur(s) enregistré(s)',
       },
       trust: {
@@ -638,6 +659,9 @@ export const translations = {
         payloadTooLarge: "Les images d'identité sont trop volumineuses. Supprimez les versos facultatifs ou utilisez des photos plus petites.",
         submissionFailed: "L'envoi a échoué. Veuillez réessayer.",
         fixHighlighted: 'Veuillez corriger les champs surlignés ci-dessus avant de continuer.',
+        invalidTravelerCount: 'Saisissez un nombre entre 1 et 10.',
+        invalidChildrenCount: 'Saisissez un nombre entre 0 et 10.',
+        datesUnavailable: "Ce logement n'est pas disponible pour les dates sélectionnées. Veuillez choisir d'autres dates.",
       },
     },
   },

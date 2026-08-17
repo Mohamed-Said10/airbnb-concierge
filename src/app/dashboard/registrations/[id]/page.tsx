@@ -23,6 +23,7 @@ interface Registration {
   id: string;
   check_in_date: string;
   check_out_date: string;
+  children_count: number;
   signature_url: string | null;
   created_at: string;
   properties: { name: string; address: string | null } | null;
@@ -73,7 +74,7 @@ export default async function RegistrationDetailPage({
 
   const { data: reg } = await db
     .from('guest_registrations')
-    .select('id, check_in_date, check_out_date, signature_url, created_at, properties(name, address), travelers(*)')
+    .select('id, check_in_date, check_out_date, children_count, signature_url, created_at, properties(name, address), travelers(*)')
     .eq('id', id)
     .in('property_id', propertyIds.length ? propertyIds : [''])
     .single();
@@ -129,6 +130,12 @@ export default async function RegistrationDetailPage({
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Dates</p>
             <p className="mt-1 text-sm text-gray-800">{registration.check_in_date} → {registration.check_out_date}</p>
           </div>
+          {registration.children_count > 0 && (
+            <div>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Children</p>
+              <p className="mt-1 text-sm text-gray-800">{registration.children_count}</p>
+            </div>
+          )}
         </div>
       </div>
 

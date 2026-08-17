@@ -26,6 +26,7 @@ interface Registration {
   id: string;
   check_in_date: string;
   check_out_date: string;
+  children_count: number;
   signature_url: string | null;
   property_ref: string | null;
   created_at: string;
@@ -103,6 +104,7 @@ export default async function AdminRegistrationDetailPage({
       id,
       check_in_date,
       check_out_date,
+      children_count,
       signature_url,
       property_ref,
       created_at,
@@ -149,6 +151,9 @@ export default async function AdminRegistrationDetailPage({
         <DetailRow label="Submitted at" value={new Date(registration.created_at).toLocaleString()} />
         <DetailRow label="Check-in date" value={registration.check_in_date} />
         <DetailRow label="Check-out date" value={registration.check_out_date} />
+        {registration.children_count > 0 && (
+          <DetailRow label="Children" value={String(registration.children_count)} />
+        )}
         <DetailRow label="Property reference" value={registration.property_ref} />
         <DetailRow label="Property name" value={registration.properties?.name ?? null} />
         <DetailRow label="Property address" value={registration.properties?.address ?? null} />

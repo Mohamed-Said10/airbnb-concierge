@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 
 interface Property {
@@ -9,6 +9,72 @@ interface Property {
   address: string | null;
   slug: string;
   created_at: string;
+}
+
+interface Photo { id: string; url: string; }
+
+function PropertyPhotos({ propertyId }: { propertyId: string }) {
+  const [photos, setPhotos] = useState<Photo[] | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const supabase = createBrowserSupabase();
+
+  const load = async () => {
+    const { data } = await supabase
+      .from('property_photos').select('id, url').eq('property_id', propertyId).order('sort_order').order('created_at');
+    setPhotos(data ?? []);
+  };
+
+  // Fetched once when this section mounts (i.e. when the owner expands it).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, []);
+
+  const handleUpload = async (files: FileList | null) => {
+    if (!files || !files.length) return;
+    setUploading(true);
+    setError('');
+    const fd = new FormData();
+    Array.from(files).forEach((file) => fd.append('photos', file));
+    const response = await fetch(`/api/properties/${propertyId}/photos`, { method: 'POST', body: fd });
+    const result = await response.json();
+    if (!response.ok) { setError(result.error || 'Upload failed'); setUploading(false); return; }
+    await load();
+    setUploading(false);
+  };
+
+  const handleDelete = async (photoId: string) => {
+    setPhotos((prev) => prev?.filter((photo) => photo.id !== photoId) ?? null);
+    await fetch(`/api/properties/${propertyId}/photos/${photoId}`, { method: 'DELETE' });
+  };
+
+  if (photos === null) return <p className="text-xs text-gray-400">Loading photos…</p>;
+
+  return (
+    <div>
+      <p className="text-xs text-gray-400 mb-2">Shown to guests on the registration page.</p>
+      {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
+      <div className="flex flex-wrap gap-3">
+        {photos.map((photo) => (
+          <div key={photo.id} className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-200">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photo.url} alt="" className="h-full w-full object-cover" />
+            <button type="button" onClick={() => handleDelete(photo.id)}
+              className="absolute top-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100">
+              ×
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+          className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-primary-400 hover:text-primary-600 disabled:opacity-60">
+          <span className="text-xl leading-none">+</span>
+          <span className="text-[10px] mt-0.5">{uploading ? '…' : 'Add'}</span>
+        </button>
+      </div>
+      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden"
+        onChange={(e) => { handleUpload(e.target.files); e.target.value = ''; }} />
+    </div>
+  );
 }
 
 function slugify(text: string) {
@@ -36,6 +102,7 @@ function PropertyCard({
   const [editAddress, setEditAddress] = useState(property.address ?? '');
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(false);
 
   const guestUrl = typeof window !== 'undefined' ? `${window.location.origin}/register/${property.slug}` : '';
 
@@ -97,29 +164,39 @@ function PropertyCard({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div className="min-w-0">
-        <p className="font-semibold text-gray-900">{property.name}</p>
-        {property.address && <p className="text-sm text-gray-500 mt-0.5">{property.address}</p>}
-        <div className="mt-2 flex items-center gap-2 flex-wrap">
-          <code className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600 truncate max-w-xs">
-            /register/{property.slug}
-          </code>
-          <button onClick={copyLink} className="text-xs text-primary-600 hover:underline whitespace-nowrap">
-            {copied ? 'Copied!' : 'Copy link'}
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-900">{property.name}</p>
+          {property.address && <p className="text-sm text-gray-500 mt-0.5">{property.address}</p>}
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            <code className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600 truncate max-w-xs">
+              /register/{property.slug}
+            </code>
+            <button onClick={copyLink} className="text-xs text-primary-600 hover:underline whitespace-nowrap">
+              {copied ? 'Copied!' : 'Copy link'}
+            </button>
+            <a href={guestUrl} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-gray-400 hover:text-gray-600">↗ Preview</a>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 sm:mt-1">
+          <button onClick={() => setShowPhotos((v) => !v)} className="text-xs text-gray-500 hover:text-gray-800 transition-colors">
+            {showPhotos ? 'Hide photos' : 'Photos'}
           </button>
-          <a href={guestUrl} target="_blank" rel="noopener noreferrer"
-            className="text-xs text-gray-400 hover:text-gray-600">↗ Preview</a>
+          <button onClick={() => setEditing(true)} className="text-xs text-gray-500 hover:text-gray-800 transition-colors">
+            Edit
+          </button>
+          <button onClick={() => onDelete(property.id)} className="text-xs text-red-400 hover:text-red-600 transition-colors">
+            Delete
+          </button>
         </div>
       </div>
-      <div className="flex items-center gap-3 shrink-0 sm:mt-1">
-        <button onClick={() => setEditing(true)} className="text-xs text-gray-500 hover:text-gray-800 transition-colors">
-          Edit
-        </button>
-        <button onClick={() => onDelete(property.id)} className="text-xs text-red-400 hover:text-red-600 transition-colors">
-          Delete
-        </button>
-      </div>
+      {showPhotos && (
+        <div className="mt-4 border-t border-gray-100 pt-4">
+          <PropertyPhotos propertyId={property.id} />
+        </div>
+      )}
     </div>
   );
 }

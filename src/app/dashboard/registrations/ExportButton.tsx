@@ -13,6 +13,7 @@ interface Registration {
   id: string;
   check_in_date: string;
   check_out_date: string;
+  children_count?: number;
   created_at: string;
   properties: { name: string } | null;
   travelers: Traveler[];
@@ -21,7 +22,7 @@ interface Registration {
 export default function ExportButton({ registrations }: { registrations: Registration[] }) {
   const handleExport = () => {
     const rows: string[][] = [
-      ['Registration ID', 'Property', 'Check-in', 'Check-out', 'Submitted At',
+      ['Registration ID', 'Property', 'Check-in', 'Check-out', 'Children', 'Submitted At',
         'First Name', 'Last Name', 'Date of Birth', 'Nationality', 'ID Type', 'ID Number'],
     ];
 
@@ -32,6 +33,7 @@ export default function ExportButton({ registrations }: { registrations: Registr
           reg.properties?.name ?? '',
           reg.check_in_date,
           reg.check_out_date,
+          String(reg.children_count ?? 0),
           new Date(reg.created_at).toISOString(),
           t.first_name,
           t.last_name,
