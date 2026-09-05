@@ -30,12 +30,12 @@ const AboutContent = () => {
         <div className="relative max-w-7xl mx-auto lg:grid lg:grid-cols-2">
           <div className="bg-gray-50 py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
             <div className="max-w-lg mx-auto lg:max-w-xl">
-              <h2 className="text-base font-semibold tracking-wide text-primary-600 uppercase">
+              <p className="text-base font-semibold tracking-wide text-primary-600 uppercase">
                 {t.about.label}
-              </h2>
-              <p className="mt-2 text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight">
-                {t.about.heading}
               </p>
+              <h1 className="mt-2 text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight">
+                {t.about.heading}
+              </h1>
               <p className="mt-6 text-xl text-gray-500">{t.about.subheading}</p>
             </div>
           </div>

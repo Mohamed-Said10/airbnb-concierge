@@ -28,6 +28,21 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   return {
     title: `${post.title} - KoziBnB Blog`,
     description: post.description,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description: post.description,
+      publishedTime: post.publishedAt,
+      authors: [post.author.name],
+      images: [{ url: post.image, width: 1200, height: 600, alt: post.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+      images: [post.image],
+    },
   };
 }
 
@@ -39,8 +54,25 @@ export default async function BlogPost({ params }: PageParams) {
     notFound();
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.description,
+    image: `${siteUrl}${post.image}`,
+    datePublished: post.publishedAt,
+    author: { '@type': 'Person', name: post.author.name },
+    publisher: { '@type': 'Organization', name: 'KoziBnB' },
+    mainEntityOfPage: `${siteUrl}/blog/${post.slug}`,
+  };
+
   return (
     <div className="bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       {/* Hero section */}
       <div className="relative py-16 bg-white overflow-hidden">
         <div className="relative px-4 sm:px-6 lg:px-8">
@@ -109,6 +141,32 @@ export default async function BlogPost({ params }: PageParams) {
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl bg-primary-600 px-8 py-10 text-center sm:px-12">
+          <h2 className="text-2xl font-extrabold text-white sm:text-3xl">
+            Want this handled for you?
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-primary-100">
+            See how KoziBnB manages guest registration, compliance, and day-to-day operations for Airbnb hosts across Morocco.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/services"
+              className="inline-flex items-center justify-center rounded-md bg-white px-5 py-3 text-base font-medium text-primary-600 hover:bg-primary-50"
+            >
+              Explore our services
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-md border border-white px-5 py-3 text-base font-medium text-white hover:bg-primary-700"
+            >
+              Contact us
+            </Link>
           </div>
         </div>
       </div>
