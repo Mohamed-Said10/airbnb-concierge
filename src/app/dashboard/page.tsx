@@ -109,7 +109,7 @@ export default async function DashboardPage() {
             ) : (properties ?? []).map((p: PropertyRow) => (
               <li key={p.id} className="px-6 py-3 flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-800">{p.name}</p>
-                <a href={`/register/${p.slug}`} target="_blank" rel="noopener noreferrer"
+                <a href={`/checkin/${p.slug}`} target="_blank" rel="noopener noreferrer"
                   className="text-xs text-primary-600 hover:underline">
                   Guest link ↗
                 </a>
