@@ -54,7 +54,7 @@ export default async function BlogPost({ params }: PageParams) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kozibnb.com';
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
