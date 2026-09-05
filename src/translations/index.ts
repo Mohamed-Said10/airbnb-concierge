@@ -53,6 +53,8 @@ export const translations = {
       navigation: 'Navigation',
       followUs: 'Follow Us',
       rights: 'All rights reserved.',
+      privacyPolicy: 'Privacy Policy',
+      termsOfService: 'Terms of Service',
     },
     services: {
       label: 'Our Services',
@@ -385,6 +387,8 @@ export const translations = {
       navigation: 'Navigation',
       followUs: 'Suivez-nous',
       rights: 'Tous droits réservés.',
+      privacyPolicy: 'Politique de confidentialité',
+      termsOfService: "Conditions d'utilisation",
     },
     services: {
       label: 'Nos services',

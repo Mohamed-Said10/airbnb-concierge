@@ -108,8 +108,8 @@ const Footer = () => {
             © {new Date().getFullYear()} KoziBnB. {t.footer.rights}
           </p>
           <div className="flex gap-4 text-sm">
-            <Link href="/legal/privacy" className="text-gray-400 hover:text-gray-600 transition-colors">Privacy Policy</Link>
-            <Link href="/legal/terms" className="text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</Link>
+            <Link href="/legal/privacy" className="text-gray-400 hover:text-gray-600 transition-colors">{t.footer.privacyPolicy}</Link>
+            <Link href="/legal/terms" className="text-gray-400 hover:text-gray-600 transition-colors">{t.footer.termsOfService}</Link>
           </div>
         </div>
       </div>
