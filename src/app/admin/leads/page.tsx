@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import LeadsFilter from './LeadsFilter';
+import { LeadsTitle, NoLeads } from './LeadsHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,13 +33,10 @@ export default async function LeadsPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-2xl font-extrabold text-gray-900 mb-8">
-        Contact Leads
-        <span className="ml-3 text-base font-normal text-gray-400">({leads.length})</span>
-      </h1>
+      <LeadsTitle count={leads.length} />
 
       {leads.length === 0 ? (
-        <p className="text-gray-500">No leads yet.</p>
+        <NoLeads />
       ) : (
         <LeadsFilter leads={leads} />
       )}

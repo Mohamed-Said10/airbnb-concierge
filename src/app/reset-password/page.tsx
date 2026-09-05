@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +18,7 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(french ? 'Les mots de passe ne correspondent pas.' : 'Passwords do not match.');
       return;
     }
     setLoading(true);
@@ -35,13 +38,13 @@ export default function ResetPasswordPage() {
       <div className="max-w-md w-full mx-auto">
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-extrabold text-primary-600">KoziBnB</Link>
-          <h1 className="mt-2 text-xl font-bold text-gray-900">Set new password</h1>
-          <p className="mt-1 text-sm text-gray-500">Choose a strong password for your account.</p>
+          <h1 className="mt-2 text-xl font-bold text-gray-900">{french ? 'Définir un nouveau mot de passe' : 'Set new password'}</h1>
+          <p className="mt-1 text-sm text-gray-500">{french ? 'Choisissez un mot de passe fort pour votre compte.' : 'Choose a strong password for your account.'}</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">New password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">{french ? 'Nouveau mot de passe' : 'New password'}</label>
               <input
                 id="password"
                 type="password"
@@ -52,10 +55,10 @@ export default function ResetPasswordPage() {
                 minLength={8}
                 autoFocus
               />
-              <p className="text-xs text-gray-400 mt-1">At least 8 characters</p>
+              <p className="text-xs text-gray-400 mt-1">{french ? 'Au moins 8 caractères' : 'At least 8 characters'}</p>
             </div>
             <div>
-              <label htmlFor="confirm" className="block text-sm font-medium text-gray-700">Confirm password</label>
+              <label htmlFor="confirm" className="block text-sm font-medium text-gray-700">{french ? 'Confirmer le mot de passe' : 'Confirm password'}</label>
               <input
                 id="confirm"
                 type="password"
@@ -72,7 +75,7 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="w-full py-2.5 px-4 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 disabled:opacity-60 transition-colors"
             >
-              {loading ? 'Updating...' : 'Update password'}
+              {loading ? (french ? 'Mise à jour...' : 'Updating...') : (french ? 'Mettre à jour le mot de passe' : 'Update password')}
             </button>
           </form>
         </div>
