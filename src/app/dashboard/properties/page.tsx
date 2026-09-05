@@ -8,6 +8,7 @@ interface Property {
   name: string;
   address: string | null;
   slug: string;
+  notification_email: string | null;
   created_at: string;
 }
 
@@ -95,11 +96,12 @@ function PropertyCard({
 }: {
   property: Property;
   onDelete: (id: string) => void;
-  onUpdate: (id: string, name: string, address: string) => Promise<void>;
+  onUpdate: (id: string, name: string, address: string, notificationEmail: string) => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(property.name);
   const [editAddress, setEditAddress] = useState(property.address ?? '');
+  const [editNotificationEmail, setEditNotificationEmail] = useState(property.notification_email ?? '');
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
@@ -115,7 +117,7 @@ function PropertyCard({
   const handleSave = async () => {
     if (!editName.trim()) return;
     setSaving(true);
-    await onUpdate(property.id, editName.trim(), editAddress.trim());
+    await onUpdate(property.id, editName.trim(), editAddress.trim(), editNotificationEmail.trim());
     setSaving(false);
     setEditing(false);
   };
@@ -123,6 +125,7 @@ function PropertyCard({
   const handleCancel = () => {
     setEditName(property.name);
     setEditAddress(property.address ?? '');
+    setEditNotificationEmail(property.notification_email ?? '');
     setEditing(false);
   };
 
@@ -147,6 +150,17 @@ function PropertyCard({
               className="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Notification email <span className="text-gray-400 font-normal">(optional)</span></label>
+            <input
+              type="email"
+              value={editNotificationEmail}
+              onChange={(e) => setEditNotificationEmail(e.target.value)}
+              placeholder="Defaults to your account email"
+              className="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+            />
+            <p className="text-xs text-gray-400 mt-1">Guest registrations for this property will notify this address instead of your account email.</p>
+          </div>
           <p className="text-xs text-gray-400">Slug <code className="bg-gray-100 px-1 rounded">/register/{property.slug}</code> cannot be changed to avoid breaking existing guest links.</p>
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving || !editName.trim()}
@@ -169,6 +183,9 @@ function PropertyCard({
         <div className="min-w-0">
           <p className="font-semibold text-gray-900">{property.name}</p>
           {property.address && <p className="text-sm text-gray-500 mt-0.5">{property.address}</p>}
+          {property.notification_email && (
+            <p className="text-xs text-gray-400 mt-0.5">Notifications → {property.notification_email}</p>
+          )}
           <div className="mt-2 flex items-center gap-2 flex-wrap">
             <code className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600 truncate max-w-xs">
               /register/{property.slug}
@@ -206,6 +223,7 @@ export default function PropertiesPage() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [notificationEmail, setNotificationEmail] = useState('');
   const [slug, setSlug] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -242,7 +260,7 @@ export default function PropertiesPage() {
 
     const { error: err } = await supabase
       .from('properties')
-      .insert({ owner_id: user.id, name, address: address || null, slug });
+      .insert({ owner_id: user.id, name, address: address || null, notification_email: notificationEmail || null, slug });
 
     if (err) {
       setError(err.message.includes('unique') ? 'That URL slug is already taken. Try a different name.' : err.message);
@@ -250,7 +268,7 @@ export default function PropertiesPage() {
       return;
     }
 
-    setName(''); setAddress(''); setSlug('');
+    setName(''); setAddress(''); setNotificationEmail(''); setSlug('');
     await loadProperties();
     setSaving(false);
   };
@@ -261,14 +279,16 @@ export default function PropertiesPage() {
     setProperties((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const handleUpdate = async (id: string, newName: string, newAddress: string) => {
+  const handleUpdate = async (id: string, newName: string, newAddress: string, newNotificationEmail: string) => {
     const { error: err } = await supabase
       .from('properties')
-      .update({ name: newName, address: newAddress || null })
+      .update({ name: newName, address: newAddress || null, notification_email: newNotificationEmail || null })
       .eq('id', id);
     if (!err) {
       setProperties((prev) =>
-        prev.map((p) => p.id === id ? { ...p, name: newName, address: newAddress || null } : p)
+        prev.map((p) => p.id === id
+          ? { ...p, name: newName, address: newAddress || null, notification_email: newNotificationEmail || null }
+          : p)
       );
     }
   };
@@ -293,6 +313,13 @@ export default function PropertiesPage() {
             <input value={address} onChange={(e) => setAddress(e.target.value)}
               placeholder="12 Rue des Jardins, Marrakech"
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Notification email <span className="text-gray-400 font-normal">(optional)</span></label>
+            <input type="email" value={notificationEmail} onChange={(e) => setNotificationEmail(e.target.value)}
+              placeholder="Defaults to your account email"
+              className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
+            <p className="text-xs text-gray-400 mt-1">Guest registrations for this property will notify this address instead of your account email.</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Guest link slug</label>

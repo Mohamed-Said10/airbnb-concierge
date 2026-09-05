@@ -6,10 +6,12 @@ interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<void> {
   const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.OWNER_EMAIL;
+  // Distinct from OWNER_EMAIL (the notification recipient) — this must be an
+  // address verified as a sender in Brevo, or every send is rejected.
+  const senderEmail = process.env.BREVO_SENDER_EMAIL;
 
   if (!apiKey || !senderEmail) {
-    console.warn('[brevo] BREVO_API_KEY or OWNER_EMAIL not set — skipping email');
+    console.warn('[brevo] BREVO_API_KEY or BREVO_SENDER_EMAIL not set — skipping email');
     return;
   }
 

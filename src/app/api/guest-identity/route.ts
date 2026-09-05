@@ -187,12 +187,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Resolve owner email: from property owner profile, or fall back to env
+    // Resolve notification email: property override, then owner profile, then env fallback.
     let ownerEmail = process.env.OWNER_EMAIL;
     if (propertyId) {
       const { data: prop } = await db
         .from('properties')
-        .select('owner_id')
+        .select('owner_id, notification_email')
         .eq('id', propertyId)
         .single();
       const { data: profile } = prop?.owner_id
@@ -200,6 +200,7 @@ export async function POST(req: NextRequest) {
         : { data: null };
       const profileEmail = profile?.email;
       if (profileEmail) ownerEmail = profileEmail;
+      if (prop?.notification_email) ownerEmail = prop.notification_email;
     }
     if (ownerEmail) {
       const guestNames = travelers.map((t) => `${t.firstName} ${t.lastName}`).join(', ');
