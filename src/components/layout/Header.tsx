@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageToggle from '@/components/LanguageToggle';
+import Logo from '@/components/Logo';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-primary-600">KoziBnB</span>
+            <Logo />
           </Link>
 
           {/* Desktop Navigation */}

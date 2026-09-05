@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     siteName,
     title: defaultTitle,
     description: defaultDescription,
-    locale: "fr_MA",
-    alternateLocale: "en_US",
+    locale: "en_US",
+    alternateLocale: "fr_MA",
     images: [{ url: "/hero-image.jpg", width: 1200, height: 630, alt: siteName }],
   },
   twitter: {
@@ -55,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans min-h-screen flex flex-col">
         <script
           type="application/ld+json"

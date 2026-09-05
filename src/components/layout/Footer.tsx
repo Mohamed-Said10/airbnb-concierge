@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
+import Logo from '@/components/Logo';
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -59,7 +60,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="col-span-2">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary-600">KoziBnB</span>
+              <Logo />
             </Link>
             <p className="mt-4 text-gray-600 max-w-md">{t.footer.description}</p>
           </div>

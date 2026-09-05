@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hreflangAlternates } from '@/lib/seo';
 
 const title = 'About Us - KoziBnB';
 const description = 'Learn about our professional Airbnb management team and our mission to help property owners maximize their rental income.';
@@ -6,7 +7,7 @@ const description = 'Learn about our professional Airbnb management team and our
 export const metadata: Metadata = {
   title,
   description,
-  alternates: { canonical: '/about' },
+  alternates: { canonical: '/about', languages: hreflangAlternates('/about') },
   openGraph: { title, description },
   twitter: { title, description },
 }; 

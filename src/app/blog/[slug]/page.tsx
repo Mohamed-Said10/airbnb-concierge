@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { blogPosts } from '@/data/blog-posts';
 import { Metadata } from 'next';
+import { hreflangAlternates } from '@/lib/seo';
 
 type PageParams = {
   params: Promise<{ slug: string }>;
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   return {
     title: `${post.title} - KoziBnB Blog`,
     description: post.description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical: `/blog/${post.slug}`, languages: hreflangAlternates(`/blog/${post.slug}`) },
     openGraph: {
       type: 'article',
       title: post.title,
