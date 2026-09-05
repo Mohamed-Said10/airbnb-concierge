@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
 import LanguageToggle from '@/components/LanguageToggle';
+import TrialBanner from './TrialBanner';
 import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 
@@ -56,7 +57,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <LogoutButton />
         </div>
       </aside>
-      <main className="flex-1 overflow-auto pt-16 md:pt-0">{children}</main>
+      <main className="flex-1 overflow-auto pt-16 md:pt-0">
+        <TrialBanner />
+        {children}
+      </main>
     </div>
   );
 }
