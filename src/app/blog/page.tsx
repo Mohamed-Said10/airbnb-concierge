@@ -1,9 +1,15 @@
 import type { Metadata } from 'next';
 import BlogContent from '@/components/sections/BlogContent';
 
+const title = 'Blog & Resources - KoziBnB';
+const description = 'Expert tips and insights about Airbnb property management, guest experiences, and maximizing your rental income.';
+
 export const metadata: Metadata = {
-  title: 'Blog & Resources - KoziBnB',
-  description: 'Expert tips and insights about Airbnb property management, guest experiences, and maximizing your rental income.',
+  title,
+  description,
+  alternates: { canonical: '/blog' },
+  openGraph: { title, description },
+  twitter: { title, description },
 };
 
 const BlogPage = () => {

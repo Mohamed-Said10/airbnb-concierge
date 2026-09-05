@@ -1,9 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+const title = 'Terms of Service - KoziBnB';
+const description = 'Terms of Service for KoziBnB property management platform.';
+
 export const metadata: Metadata = {
-  title: 'Terms of Service - KoziBnB',
-  description: 'Terms of Service for KoziBnB property management platform.',
+  title,
+  description,
+  alternates: { canonical: '/legal/terms' },
+  openGraph: { title, description },
+  twitter: { title, description },
 };
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
