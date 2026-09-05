@@ -52,7 +52,8 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-extrabold text-primary-600">KoziBnB</Link>
           <h1 className="mt-2 text-xl font-bold text-gray-900">Create your account</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm font-medium text-primary-600">Start with a free 3-month trial — no credit card required.</p>
+          <p className="mt-2 text-sm text-gray-500">
             Already have an account?{' '}
             <Link href="/login" className="text-primary-600 hover:underline font-medium">Sign in</Link>
           </p>
@@ -81,7 +82,7 @@ export default function SignupPage() {
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button type="submit" disabled={loading}
               className="w-full py-2.5 px-4 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 disabled:opacity-60 transition-colors">
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Creating account...' : 'Start free trial'}
             </button>
           </form>
         </div>
