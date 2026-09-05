@@ -14,7 +14,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('fr');
+  const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
     const stored = localStorage.getItem('lang') as Language | null;
@@ -22,7 +22,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setLanguageState(stored);
       document.documentElement.lang = stored;
     } else {
-      document.documentElement.lang = 'fr';
+      document.documentElement.lang = 'en';
     }
   }, []);
 
