@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import LeadStatusSelect from './LeadStatusSelect';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Lead {
   id: string;
@@ -15,6 +16,8 @@ interface Lead {
 }
 
 export default function LeadsFilter({ leads }: { leads: Lead[] }) {
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -39,7 +42,7 @@ export default function LeadsFilter({ leads }: { leads: Lead[] }) {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name, email, or message…"
+          placeholder={french ? 'Rechercher par nom, e-mail ou message…' : 'Search by name, email, or message…'}
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500 w-full sm:w-72"
         />
         <select
@@ -47,31 +50,33 @@ export default function LeadsFilter({ leads }: { leads: Lead[] }) {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
         >
-          <option value="all">All statuses</option>
-          <option value="new">New</option>
-          <option value="contacted">Contacted</option>
-          <option value="converted">Converted</option>
+          <option value="all">{french ? 'Tous les statuts' : 'All statuses'}</option>
+          <option value="new">{french ? 'Nouveau' : 'New'}</option>
+          <option value="contacted">{french ? 'Contacté' : 'Contacted'}</option>
+          <option value="converted">{french ? 'Converti' : 'Converted'}</option>
         </select>
         {(query || statusFilter !== 'all') && (
-          <span className="self-center text-xs text-gray-400">{filtered.length} of {leads.length}</span>
+          <span className="self-center text-xs text-gray-400">
+            {french ? `${filtered.length} sur ${leads.length}` : `${filtered.length} of ${leads.length}`}
+          </span>
         )}
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-gray-500 text-sm">No leads match your search.</p>
+        <p className="text-gray-500 text-sm">{french ? 'Aucun prospect ne correspond à votre recherche.' : 'No leads match your search.'}</p>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
-                  <th className="px-6 py-3">Name</th>
-                  <th className="px-6 py-3">Email</th>
-                  <th className="px-6 py-3">Phone</th>
-                  <th className="px-6 py-3">Property</th>
-                  <th className="px-6 py-3">Status</th>
-                  <th className="px-6 py-3">Date</th>
-                  <th className="px-6 py-3">Message</th>
+                  <th className="px-6 py-3">{french ? 'Nom' : 'Name'}</th>
+                  <th className="px-6 py-3">{french ? 'E-mail' : 'Email'}</th>
+                  <th className="px-6 py-3">{french ? 'Téléphone' : 'Phone'}</th>
+                  <th className="px-6 py-3">{french ? 'Propriété' : 'Property'}</th>
+                  <th className="px-6 py-3">{french ? 'Statut' : 'Status'}</th>
+                  <th className="px-6 py-3">{french ? 'Date' : 'Date'}</th>
+                  <th className="px-6 py-3">{french ? 'Message' : 'Message'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">

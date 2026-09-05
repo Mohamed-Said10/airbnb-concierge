@@ -1,7 +1,8 @@
 import { createServerSupabase } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
-import ExportButton from './ExportButton';
+import RegistrationsHeader from './RegistrationsHeader';
 import RegistrationsFilter from './RegistrationsFilter';
+import NoRegistrations from './NoRegistrations';
 
 interface Traveler {
   id: string;
@@ -51,16 +52,10 @@ export default async function DashboardRegistrationsPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-extrabold text-gray-900">
-          Registrations
-          <span className="ml-3 text-base font-normal text-gray-400">({rows.length})</span>
-        </h1>
-        <ExportButton registrations={rows} />
-      </div>
+      <RegistrationsHeader count={rows.length} registrations={rows} />
 
       {rows.length === 0 ? (
-        <p className="text-gray-500">No guest registrations yet.</p>
+        <NoRegistrations />
       ) : (
         <RegistrationsFilter registrations={rows} properties={properties ?? []} />
       )}

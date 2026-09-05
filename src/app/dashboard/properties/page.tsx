@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Property {
   id: string;
@@ -15,6 +16,8 @@ interface Property {
 interface Photo { id: string; url: string; }
 
 function PropertyPhotos({ propertyId }: { propertyId: string }) {
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const [photos, setPhotos] = useState<Photo[] | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +42,7 @@ function PropertyPhotos({ propertyId }: { propertyId: string }) {
     Array.from(files).forEach((file) => fd.append('photos', file));
     const response = await fetch(`/api/properties/${propertyId}/photos`, { method: 'POST', body: fd });
     const result = await response.json();
-    if (!response.ok) { setError(result.error || 'Upload failed'); setUploading(false); return; }
+    if (!response.ok) { setError(result.error || (french ? 'Échec du téléversement' : 'Upload failed')); setUploading(false); return; }
     await load();
     setUploading(false);
   };
@@ -49,11 +52,11 @@ function PropertyPhotos({ propertyId }: { propertyId: string }) {
     await fetch(`/api/properties/${propertyId}/photos/${photoId}`, { method: 'DELETE' });
   };
 
-  if (photos === null) return <p className="text-xs text-gray-400">Loading photos…</p>;
+  if (photos === null) return <p className="text-xs text-gray-400">{french ? 'Chargement des photos…' : 'Loading photos…'}</p>;
 
   return (
     <div>
-      <p className="text-xs text-gray-400 mb-2">Shown to guests on the registration page.</p>
+      <p className="text-xs text-gray-400 mb-2">{french ? "Affichées aux invités sur la page d'enregistrement." : 'Shown to guests on the registration page.'}</p>
       {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
       <div className="flex flex-wrap gap-3">
         {photos.map((photo) => (
@@ -69,7 +72,7 @@ function PropertyPhotos({ propertyId }: { propertyId: string }) {
         <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
           className="flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-primary-400 hover:text-primary-600 disabled:opacity-60">
           <span className="text-xl leading-none">+</span>
-          <span className="text-[10px] mt-0.5">{uploading ? '…' : 'Add'}</span>
+          <span className="text-[10px] mt-0.5">{uploading ? '…' : (french ? 'Ajouter' : 'Add')}</span>
         </button>
       </div>
       <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden"
@@ -98,6 +101,8 @@ function PropertyCard({
   onDelete: (id: string) => void;
   onUpdate: (id: string, name: string, address: string, notificationEmail: string) => Promise<void>;
 }) {
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(property.name);
   const [editAddress, setEditAddress] = useState(property.address ?? '');
@@ -134,7 +139,7 @@ function PropertyCard({
       <div className="bg-white rounded-xl shadow-sm border border-primary-200 p-5">
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Property name</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">{french ? 'Nom de la propriété' : 'Property name'}</label>
             <input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
@@ -143,7 +148,7 @@ function PropertyCard({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Address <span className="text-gray-400 font-normal">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">{french ? 'Adresse' : 'Address'} <span className="text-gray-400 font-normal">{french ? '(optionnel)' : '(optional)'}</span></label>
             <input
               value={editAddress}
               onChange={(e) => setEditAddress(e.target.value)}
@@ -151,25 +156,28 @@ function PropertyCard({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Notification email <span className="text-gray-400 font-normal">(optional)</span></label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">{french ? 'E-mail de notification' : 'Notification email'} <span className="text-gray-400 font-normal">{french ? '(optionnel)' : '(optional)'}</span></label>
             <input
               type="email"
               value={editNotificationEmail}
               onChange={(e) => setEditNotificationEmail(e.target.value)}
-              placeholder="Defaults to your account email"
+              placeholder={french ? "Par défaut, l'e-mail de votre compte" : 'Defaults to your account email'}
               className="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
             />
-            <p className="text-xs text-gray-400 mt-1">Guest registrations for this property will notify this address instead of your account email.</p>
+            <p className="text-xs text-gray-400 mt-1">{french ? 'Les enregistrements pour cette propriété notifieront cette adresse au lieu de celle de votre compte.' : 'Guest registrations for this property will notify this address instead of your account email.'}</p>
           </div>
-          <p className="text-xs text-gray-400">Slug <code className="bg-gray-100 px-1 rounded">/checkin/{property.slug}</code> cannot be changed to avoid breaking existing guest links.</p>
+          <p className="text-xs text-gray-400">
+            {french ? 'Le slug ' : 'Slug '}<code className="bg-gray-100 px-1 rounded">/checkin/{property.slug}</code>
+            {french ? ' ne peut pas être modifié pour ne pas casser les liens invités existants.' : ' cannot be changed to avoid breaking existing guest links.'}
+          </p>
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving || !editName.trim()}
               className="px-4 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700 disabled:opacity-60 transition-colors">
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? (french ? 'Enregistrement...' : 'Saving...') : (french ? 'Enregistrer' : 'Save')}
             </button>
             <button onClick={handleCancel}
               className="px-4 py-1.5 border border-gray-300 text-xs font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-              Cancel
+              {french ? 'Annuler' : 'Cancel'}
             </button>
           </div>
         </div>
@@ -184,28 +192,28 @@ function PropertyCard({
           <p className="font-semibold text-gray-900">{property.name}</p>
           {property.address && <p className="text-sm text-gray-500 mt-0.5">{property.address}</p>}
           {property.notification_email && (
-            <p className="text-xs text-gray-400 mt-0.5">Notifications → {property.notification_email}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{french ? 'Notifications → ' : 'Notifications → '}{property.notification_email}</p>
           )}
           <div className="mt-2 flex items-center gap-2 flex-wrap">
             <code className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600 truncate max-w-xs">
               /checkin/{property.slug}
             </code>
             <button onClick={copyLink} className="text-xs text-primary-600 hover:underline whitespace-nowrap">
-              {copied ? 'Copied!' : 'Copy link'}
+              {copied ? (french ? 'Copié !' : 'Copied!') : (french ? 'Copier le lien' : 'Copy link')}
             </button>
             <a href={guestUrl} target="_blank" rel="noopener noreferrer"
-              className="text-xs text-gray-400 hover:text-gray-600">↗ Preview</a>
+              className="text-xs text-gray-400 hover:text-gray-600">↗ {french ? 'Aperçu' : 'Preview'}</a>
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0 sm:mt-1">
           <button onClick={() => setShowPhotos((v) => !v)} className="text-xs text-gray-500 hover:text-gray-800 transition-colors">
-            {showPhotos ? 'Hide photos' : 'Photos'}
+            {showPhotos ? (french ? 'Masquer les photos' : 'Hide photos') : (french ? 'Photos' : 'Photos')}
           </button>
           <button onClick={() => setEditing(true)} className="text-xs text-gray-500 hover:text-gray-800 transition-colors">
-            Edit
+            {french ? 'Modifier' : 'Edit'}
           </button>
           <button onClick={() => onDelete(property.id)} className="text-xs text-red-400 hover:text-red-600 transition-colors">
-            Delete
+            {french ? 'Supprimer' : 'Delete'}
           </button>
         </div>
       </div>
@@ -219,6 +227,8 @@ function PropertyCard({
 }
 
 export default function PropertiesPage() {
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
@@ -263,7 +273,9 @@ export default function PropertiesPage() {
       .insert({ owner_id: user.id, name, address: address || null, notification_email: notificationEmail || null, slug });
 
     if (err) {
-      setError(err.message.includes('unique') ? 'That URL slug is already taken. Try a different name.' : err.message);
+      setError(err.message.includes('unique')
+        ? (french ? 'Ce slug est déjà utilisé. Essayez un autre nom.' : 'That URL slug is already taken. Try a different name.')
+        : err.message);
       setSaving(false);
       return;
     }
@@ -274,7 +286,7 @@ export default function PropertiesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this property? All linked registrations will be unlinked.')) return;
+    if (!confirm(french ? 'Supprimer cette propriété ? Les enregistrements liés seront dissociés.' : 'Delete this property? All linked registrations will be unlinked.')) return;
     await supabase.from('properties').delete().eq('id', id);
     setProperties((prev) => prev.filter((p) => p.id !== id));
   };
@@ -295,34 +307,34 @@ export default function PropertiesPage() {
 
   return (
     <div className="p-4 sm:p-8">
-      <h1 className="text-2xl font-extrabold text-gray-900 mb-8">Properties</h1>
+      <h1 className="text-2xl font-extrabold text-gray-900 mb-8">{french ? 'Propriétés' : 'Properties'}</h1>
 
       {/* Add property form */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 max-w-xl">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Add a property</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">{french ? 'Ajouter une propriété' : 'Add a property'}</h2>
         <form onSubmit={handleAdd} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Property name</label>
+            <label className="block text-sm font-medium text-gray-700">{french ? 'Nom de la propriété' : 'Property name'}</label>
             <input value={name} onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Villa des Orangers, Marrakech"
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
               required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Address <span className="text-gray-400 font-normal">(optional)</span></label>
+            <label className="block text-sm font-medium text-gray-700">{french ? 'Adresse' : 'Address'} <span className="text-gray-400 font-normal">{french ? '(optionnel)' : '(optional)'}</span></label>
             <input value={address} onChange={(e) => setAddress(e.target.value)}
               placeholder="12 Rue des Jardins, Marrakech"
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Notification email <span className="text-gray-400 font-normal">(optional)</span></label>
+            <label className="block text-sm font-medium text-gray-700">{french ? 'E-mail de notification' : 'Notification email'} <span className="text-gray-400 font-normal">{french ? '(optionnel)' : '(optional)'}</span></label>
             <input type="email" value={notificationEmail} onChange={(e) => setNotificationEmail(e.target.value)}
-              placeholder="Defaults to your account email"
+              placeholder={french ? "Par défaut, l'e-mail de votre compte" : 'Defaults to your account email'}
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500" />
-            <p className="text-xs text-gray-400 mt-1">Guest registrations for this property will notify this address instead of your account email.</p>
+            <p className="text-xs text-gray-400 mt-1">{french ? 'Les enregistrements pour cette propriété notifieront cette adresse au lieu de celle de votre compte.' : 'Guest registrations for this property will notify this address instead of your account email.'}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Guest link slug</label>
+            <label className="block text-sm font-medium text-gray-700">{french ? 'Slug du lien invité' : 'Guest link slug'}</label>
             <div className="mt-1 flex rounded-lg border border-gray-300 overflow-hidden">
               <span className="bg-gray-50 px-3 py-2 text-xs text-gray-400 border-r border-gray-300 flex items-center whitespace-nowrap">
                 kozibnb.com/checkin/
@@ -331,21 +343,21 @@ export default function PropertiesPage() {
                 className="flex-1 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required />
             </div>
-            <p className="text-xs text-gray-400 mt-1">Unique URL you share with arriving guests.</p>
+            <p className="text-xs text-gray-400 mt-1">{french ? 'URL unique à partager avec vos invités.' : 'Unique URL you share with arriving guests.'}</p>
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={saving || !slug}
             className="px-5 py-2 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 disabled:opacity-60 transition-colors">
-            {saving ? 'Adding...' : 'Add property'}
+            {saving ? (french ? 'Ajout...' : 'Adding...') : (french ? 'Ajouter la propriété' : 'Add property')}
           </button>
         </form>
       </div>
 
       {/* Properties list */}
       {loading ? (
-        <p className="text-sm text-gray-400">Loading...</p>
+        <p className="text-sm text-gray-400">{french ? 'Chargement...' : 'Loading...'}</p>
       ) : properties.length === 0 ? (
-        <p className="text-sm text-gray-400">No properties yet. Add your first one above.</p>
+        <p className="text-sm text-gray-400">{french ? 'Aucune propriété pour le moment. Ajoutez la première ci-dessus.' : 'No properties yet. Add your first one above.'}</p>
       ) : (
         <div className="space-y-4 max-w-2xl">
           {properties.map((p) => (

@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import DeleteRegistrationButton from '@/components/DeleteRegistrationButton';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Traveler {
   id: string;
@@ -39,6 +40,8 @@ const stayStatus = (reg: Registration, today: string): Exclude<StayStatus, ''> =
 export default function RegistrationsFilter({ registrations, properties }: {
   registrations: Registration[]; properties: Property[];
 }) {
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const [query, setQuery] = useState('');
   const [propertyFilter, setPropertyFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<StayStatus>('');
@@ -69,58 +72,60 @@ export default function RegistrationsFilter({ registrations, properties }: {
     <div>
       <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-white p-4">
         <div className="min-w-0 flex-1 basis-64">
-          <label className="mb-1 block text-xs font-medium text-gray-500">Search</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500">{french ? 'Recherche' : 'Search'}</label>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Property, guest name, or date…"
+            placeholder={french ? 'Propriété, nom de l’invité ou date…' : 'Property, guest name, or date…'}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
         {properties.length > 1 && (
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500">Property</label>
+            <label className="mb-1 block text-xs font-medium text-gray-500">{french ? 'Propriété' : 'Property'}</label>
             <select value={propertyFilter} onChange={(e) => setPropertyFilter(e.target.value)}
               className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:ring-primary-500 focus:border-primary-500">
-              <option value="">All properties</option>
+              <option value="">{french ? 'Toutes les propriétés' : 'All properties'}</option>
               {properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}
             </select>
           </div>
         )}
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Stay</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500">{french ? 'Séjour' : 'Stay'}</label>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StayStatus)}
             className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:ring-primary-500 focus:border-primary-500">
-            <option value="">All</option>
-            <option value="upcoming">Upcoming</option>
-            <option value="current">Current</option>
-            <option value="past">Past</option>
+            <option value="">{french ? 'Tous' : 'All'}</option>
+            <option value="upcoming">{french ? 'À venir' : 'Upcoming'}</option>
+            <option value="current">{french ? 'En cours' : 'Current'}</option>
+            <option value="past">{french ? 'Passé' : 'Past'}</option>
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">From</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500">{french ? 'Du' : 'From'}</label>
           <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:ring-primary-500 focus:border-primary-500" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">To</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500">{french ? 'Au' : 'To'}</label>
           <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:ring-primary-500 focus:border-primary-500" />
         </div>
         {hasActiveFilters && (
           <button type="button" onClick={resetFilters}
             className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Clear filters
+            {french ? 'Effacer les filtres' : 'Clear filters'}
           </button>
         )}
         {hasActiveFilters && (
-          <p className="w-full text-xs text-gray-400">{filtered.length} of {registrations.length} results</p>
+          <p className="w-full text-xs text-gray-400">
+            {french ? `${filtered.length} sur ${registrations.length} résultats` : `${filtered.length} of ${registrations.length} results`}
+          </p>
         )}
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-gray-400">No registrations match your search.</p>
+        <p className="text-sm text-gray-400">{french ? 'Aucun enregistrement ne correspond à votre recherche.' : 'No registrations match your search.'}</p>
       ) : (
         <div className="space-y-6">
           {filtered.map((reg) => (
@@ -128,23 +133,23 @@ export default function RegistrationsFilter({ registrations, properties }: {
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex flex-wrap items-center gap-4">
                 {reg.properties && (
                   <div>
-                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Property</span>
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{french ? 'Propriété' : 'Property'}</span>
                     <p className="text-sm font-semibold text-primary-600">{reg.properties.name}</p>
                   </div>
                 )}
                 <div>
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Check-in</span>
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{french ? 'Arrivée' : 'Check-in'}</span>
                   <p className="text-sm text-gray-700">{reg.check_in_date}</p>
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Check-out</span>
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{french ? 'Départ' : 'Check-out'}</span>
                   <p className="text-sm text-gray-700">{reg.check_out_date}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-4">
                   <span className="text-xs text-gray-400">{new Date(reg.created_at).toLocaleString()}</span>
                   <Link href={`/dashboard/registrations/${reg.id}`}
                     className="text-xs text-primary-600 hover:underline font-medium whitespace-nowrap">
-                    View details →
+                    {french ? 'Voir les détails →' : 'View details →'}
                   </Link>
                 </div>
               </div>
@@ -152,11 +157,11 @@ export default function RegistrationsFilter({ registrations, properties }: {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-xs text-gray-400 uppercase tracking-wide border-b border-gray-100">
-                      <th className="px-6 py-3">Name</th>
-                      <th className="px-6 py-3">Date of Birth</th>
-                      <th className="px-6 py-3">Nationality</th>
-                      <th className="px-6 py-3">Document</th>
-                      <th className="px-6 py-3">Number</th>
+                      <th className="px-6 py-3">{french ? 'Nom' : 'Name'}</th>
+                      <th className="px-6 py-3">{french ? 'Date de naissance' : 'Date of Birth'}</th>
+                      <th className="px-6 py-3">{french ? 'Nationalité' : 'Nationality'}</th>
+                      <th className="px-6 py-3">{french ? 'Document' : 'Document'}</th>
+                      <th className="px-6 py-3">{french ? 'Numéro' : 'Number'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -180,8 +185,8 @@ export default function RegistrationsFilter({ registrations, properties }: {
                 <DeleteRegistrationButton
                   endpoint={`/api/registrations/${reg.id}`}
                   redirectTo="/dashboard/registrations"
-                  label="Remove registration"
-                  confirmation="Permanently remove this registration and all its documents?"
+                  label={french ? "Supprimer l'enregistrement" : 'Remove registration'}
+                  confirmation={french ? 'Supprimer définitivement cet enregistrement et tous ses documents ?' : 'Permanently remove this registration and all its documents?'}
                 />
               </div>
             </div>

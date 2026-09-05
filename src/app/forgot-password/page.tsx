@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ForgotPasswordPage() {
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -34,12 +37,16 @@ export default function ForgotPasswordPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{french ? 'Vérifiez votre e-mail' : 'Check your email'}</h2>
           <p className="text-gray-500 text-sm mb-6">
-            We sent a password reset link to <strong>{email}</strong>.
+            {french ? (
+              <>Nous avons envoyé un lien de réinitialisation à <strong>{email}</strong>.</>
+            ) : (
+              <>We sent a password reset link to <strong>{email}</strong>.</>
+            )}
           </p>
           <Link href="/login" className="text-primary-600 hover:underline text-sm font-medium">
-            Back to sign in
+            {french ? 'Retour à la connexion' : 'Back to sign in'}
           </Link>
         </div>
       </div>
@@ -51,15 +58,15 @@ export default function ForgotPasswordPage() {
       <div className="max-w-md w-full mx-auto">
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-extrabold text-primary-600">KoziBnB</Link>
-          <h1 className="mt-2 text-xl font-bold text-gray-900">Reset your password</h1>
+          <h1 className="mt-2 text-xl font-bold text-gray-900">{french ? 'Réinitialisez votre mot de passe' : 'Reset your password'}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Enter your email and we&apos;ll send you a reset link.
+            {french ? 'Entrez votre e-mail et nous vous enverrons un lien de réinitialisation.' : "Enter your email and we'll send you a reset link."}
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">{french ? 'E-mail' : 'Email'}</label>
               <input
                 id="email"
                 type="email"
@@ -76,12 +83,12 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full py-2.5 px-4 bg-primary-600 text-white rounded-lg text-sm font-semibold hover:bg-primary-700 disabled:opacity-60 transition-colors"
             >
-              {loading ? 'Sending...' : 'Send reset link'}
+              {loading ? (french ? 'Envoi...' : 'Sending...') : (french ? 'Envoyer le lien' : 'Send reset link')}
             </button>
           </form>
         </div>
         <p className="text-center mt-4 text-sm text-gray-500">
-          <Link href="/login" className="text-primary-600 hover:underline font-medium">Back to sign in</Link>
+          <Link href="/login" className="text-primary-600 hover:underline font-medium">{french ? 'Retour à la connexion' : 'Back to sign in'}</Link>
         </p>
       </div>
     </div>

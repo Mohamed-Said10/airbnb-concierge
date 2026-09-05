@@ -3,12 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { blogPosts } from '@/data/blog-posts';
+import { localizedPost } from '@/types/blog';
 import { useLanguage } from '@/context/LanguageContext';
 
 const BlogContent = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const featuredPost = blogPosts[0];
   const otherPosts = blogPosts.slice(1);
+  const featured = localizedPost(featuredPost, language);
+  const dateLocale = language === 'fr' ? 'fr-FR' : 'en-US';
 
   return (
     <div className="bg-white">
@@ -69,7 +72,7 @@ const BlogContent = () => {
             <Image
               className="w-full rounded-lg shadow-lg"
               src={featuredPost.image}
-              alt={featuredPost.title}
+              alt={featured.title}
               width={800}
               height={600}
             />
@@ -79,8 +82,8 @@ const BlogContent = () => {
               {t.blog.featuredArticle}
             </div>
             <Link href={`/blog/${featuredPost.slug}`} className="mt-4 block">
-              <h3 className="text-3xl font-extrabold text-gray-900">{featuredPost.title}</h3>
-              <p className="mt-3 text-lg text-gray-500">{featuredPost.description}</p>
+              <h3 className="text-3xl font-extrabold text-gray-900">{featured.title}</h3>
+              <p className="mt-3 text-lg text-gray-500">{featured.description}</p>
             </Link>
             <div className="mt-6 flex items-center">
               <div className="flex-shrink-0">
@@ -96,14 +99,14 @@ const BlogContent = () => {
                 <p className="text-sm font-medium text-gray-900">{featuredPost.author.name}</p>
                 <div className="flex space-x-1 text-sm text-gray-500">
                   <time dateTime={featuredPost.publishedAt}>
-                    {new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
+                    {new Date(featuredPost.publishedAt).toLocaleDateString(dateLocale, {
                       month: 'long',
                       day: 'numeric',
                       year: 'numeric',
                     })}
                   </time>
                   <span aria-hidden="true">&middot;</span>
-                  <span>{featuredPost.readTime}</span>
+                  <span>{featured.readTime}</span>
                 </div>
               </div>
             </div>
@@ -115,53 +118,56 @@ const BlogContent = () => {
       <div className="bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid gap-16 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-12">
-            {otherPosts.map((post) => (
-              <article key={post.id} className="flex flex-col">
-                <div>
-                  <Image
-                    className="w-full h-48 rounded-lg object-cover"
-                    src={post.image}
-                    alt={post.title}
-                    width={400}
-                    height={300}
-                  />
-                </div>
-                <div className="flex-1 bg-white p-6 flex flex-col justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-primary-600">{post.category}</p>
-                    <Link href={`/blog/${post.slug}`} className="block mt-2">
-                      <p className="text-xl font-semibold text-gray-900">{post.title}</p>
-                      <p className="mt-3 text-base text-gray-500">{post.description}</p>
-                    </Link>
+            {otherPosts.map((post) => {
+              const localized = localizedPost(post, language);
+              return (
+                <article key={post.id} className="flex flex-col">
+                  <div>
+                    <Image
+                      className="w-full h-48 rounded-lg object-cover"
+                      src={post.image}
+                      alt={localized.title}
+                      width={400}
+                      height={300}
+                    />
                   </div>
-                  <div className="mt-6 flex items-center">
-                    <div className="flex-shrink-0">
-                      <Image
-                        className="h-10 w-10 rounded-full"
-                        src={post.author.image}
-                        alt={post.author.name}
-                        width={40}
-                        height={40}
-                      />
+                  <div className="flex-1 bg-white p-6 flex flex-col justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-primary-600">{localized.category}</p>
+                      <Link href={`/blog/${post.slug}`} className="block mt-2">
+                        <p className="text-xl font-semibold text-gray-900">{localized.title}</p>
+                        <p className="mt-3 text-base text-gray-500">{localized.description}</p>
+                      </Link>
                     </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">{post.author.name}</p>
-                      <div className="flex space-x-1 text-sm text-gray-500">
-                        <time dateTime={post.publishedAt}>
-                          {new Date(post.publishedAt).toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </time>
-                        <span aria-hidden="true">&middot;</span>
-                        <span>{post.readTime}</span>
+                    <div className="mt-6 flex items-center">
+                      <div className="flex-shrink-0">
+                        <Image
+                          className="h-10 w-10 rounded-full"
+                          src={post.author.image}
+                          alt={post.author.name}
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900">{post.author.name}</p>
+                        <div className="flex space-x-1 text-sm text-gray-500">
+                          <time dateTime={post.publishedAt}>
+                            {new Date(post.publishedAt).toLocaleDateString(dateLocale, {
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </time>
+                          <span aria-hidden="true">&middot;</span>
+                          <span>{localized.readTime}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </div>
       </div>

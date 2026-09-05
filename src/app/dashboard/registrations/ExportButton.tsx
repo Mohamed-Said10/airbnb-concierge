@@ -1,5 +1,7 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
+
 interface Traveler {
   first_name: string;
   last_name: string;
@@ -20,6 +22,8 @@ interface Registration {
 }
 
 export default function ExportButton({ registrations }: { registrations: Registration[] }) {
+  const { language } = useLanguage();
+  const french = language === 'fr';
   const handleExport = () => {
     const rows: string[][] = [
       ['Registration ID', 'Property', 'Check-in', 'Check-out', 'Children', 'Submitted At',
@@ -67,7 +71,7 @@ export default function ExportButton({ registrations }: { registrations: Registr
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
       </svg>
-      Export CSV
+      {french ? 'Exporter CSV' : 'Export CSV'}
     </button>
   );
 }

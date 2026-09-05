@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 const STATUS_OPTIONS = ['new', 'contacted', 'converted'] as const;
 type Status = typeof STATUS_OPTIONS[number];
@@ -11,7 +12,13 @@ const statusColors: Record<Status, string> = {
   converted: 'bg-green-100 text-green-700',
 };
 
+const statusLabels: Record<'en' | 'fr', Record<Status, string>> = {
+  en: { new: 'New', contacted: 'Contacted', converted: 'Converted' },
+  fr: { new: 'Nouveau', contacted: 'Contacté', converted: 'Converti' },
+};
+
 export default function LeadStatusSelect({ leadId, initial }: { leadId: string; initial: string }) {
+  const { language } = useLanguage();
   const [status, setStatus] = useState<Status>((initial as Status) ?? 'new');
   const [saving, setSaving] = useState(false);
 
@@ -38,7 +45,7 @@ export default function LeadStatusSelect({ leadId, initial }: { leadId: string; 
       >
         {STATUS_OPTIONS.map((s) => (
           <option key={s} value={s} className="bg-white text-gray-800 font-normal">
-            {s.charAt(0).toUpperCase() + s.slice(1)}
+            {statusLabels[language][s]}
           </option>
         ))}
       </select>
