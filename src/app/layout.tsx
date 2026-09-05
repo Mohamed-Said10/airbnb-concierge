@@ -4,7 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Providers } from "@/components/Providers";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.kozibnb.com";
 const siteName = "KoziBnB";
 const defaultTitle = "KoziBnB - Professional Airbnb Management Services";
 const defaultDescription = "Professional Airbnb management services to help you maximize your property's potential while providing exceptional guest experiences.";
