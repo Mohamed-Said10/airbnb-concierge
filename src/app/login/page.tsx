@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
-    router.push('/dashboard');
+    router.push(next);
     router.refresh();
   };
 
@@ -35,7 +37,7 @@ export default function LoginPage() {
           <h1 className="mt-2 text-xl font-bold text-gray-900">Sign in to your account</h1>
           <p className="mt-1 text-sm text-gray-500">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-primary-600 hover:underline font-medium">Sign up</Link>
+            <Link href={`/signup?next=${encodeURIComponent(next)}`} className="text-primary-600 hover:underline font-medium">Sign up</Link>
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8">
@@ -66,5 +68,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

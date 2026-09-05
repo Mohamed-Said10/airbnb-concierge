@@ -106,7 +106,7 @@ function PropertyCard({
   const [copied, setCopied] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
 
-  const guestUrl = typeof window !== 'undefined' ? `${window.location.origin}/register/${property.slug}` : '';
+  const guestUrl = typeof window !== 'undefined' ? `${window.location.origin}/checkin/${property.slug}` : '';
 
   const copyLink = () => {
     navigator.clipboard.writeText(guestUrl);
@@ -161,7 +161,7 @@ function PropertyCard({
             />
             <p className="text-xs text-gray-400 mt-1">Guest registrations for this property will notify this address instead of your account email.</p>
           </div>
-          <p className="text-xs text-gray-400">Slug <code className="bg-gray-100 px-1 rounded">/register/{property.slug}</code> cannot be changed to avoid breaking existing guest links.</p>
+          <p className="text-xs text-gray-400">Slug <code className="bg-gray-100 px-1 rounded">/checkin/{property.slug}</code> cannot be changed to avoid breaking existing guest links.</p>
           <div className="flex gap-2">
             <button onClick={handleSave} disabled={saving || !editName.trim()}
               className="px-4 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-lg hover:bg-primary-700 disabled:opacity-60 transition-colors">
@@ -188,7 +188,7 @@ function PropertyCard({
           )}
           <div className="mt-2 flex items-center gap-2 flex-wrap">
             <code className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600 truncate max-w-xs">
-              /register/{property.slug}
+              /checkin/{property.slug}
             </code>
             <button onClick={copyLink} className="text-xs text-primary-600 hover:underline whitespace-nowrap">
               {copied ? 'Copied!' : 'Copy link'}
@@ -325,7 +325,7 @@ export default function PropertiesPage() {
             <label className="block text-sm font-medium text-gray-700">Guest link slug</label>
             <div className="mt-1 flex rounded-lg border border-gray-300 overflow-hidden">
               <span className="bg-gray-50 px-3 py-2 text-xs text-gray-400 border-r border-gray-300 flex items-center whitespace-nowrap">
-                kozibnb.ma/register/
+                kozibnb.com/checkin/
               </span>
               <input value={slug} onChange={(e) => setSlug(slugify(e.target.value))}
                 className="flex-1 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"

@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { createBrowserSupabase } from '@/lib/supabase-browser';
 
-export default function SignupPage() {
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || '/dashboard';
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +23,10 @@ export default function SignupPage() {
     const { error: err } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     });
     if (err) {
       setError(err.message);
@@ -55,7 +61,7 @@ export default function SignupPage() {
           <p className="mt-1 text-sm font-medium text-primary-600">Start with a free 3-month trial — no credit card required.</p>
           <p className="mt-2 text-sm text-gray-500">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary-600 hover:underline font-medium">Sign in</Link>
+            <Link href={`/login?next=${encodeURIComponent(next)}`} className="text-primary-600 hover:underline font-medium">Sign in</Link>
           </p>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-8">
@@ -88,5 +94,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }

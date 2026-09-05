@@ -20,7 +20,7 @@ export default function robots(): MetadataRoute.Robots {
         '/auth/*',
         // Per-property guest links are meant only for the guests they're shared
         // with, not for search discovery.
-        '/register/*',
+        '/checkin/*',
         '/guest-identity',
       ],
     },
