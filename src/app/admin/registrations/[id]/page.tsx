@@ -1,5 +1,7 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
+import { isAuthenticatedAdmin } from '@/lib/admin-access';
+import { decryptIdNumber } from '@/lib/crypto';
 import AdminRegistrationDetailClient from './AdminRegistrationDetailClient';
 
 export const dynamic = 'force-dynamic';
@@ -62,6 +64,8 @@ export default async function AdminRegistrationDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  if (!(await isAuthenticatedAdmin())) redirect('/admin/login');
+
   const { id } = await params;
   const db = supabaseAdmin();
   const { data, error } = await db
@@ -86,6 +90,7 @@ export default async function AdminRegistrationDetailPage({
   const travelers = await Promise.all(
     registration.travelers.map(async (traveler) => ({
       ...traveler,
+      id_number: decryptIdNumber(traveler.id_number),
       frontUrl: await createSignedUrl(db, traveler.id_front_photo_url),
       backUrl: await createSignedUrl(db, traveler.id_back_photo_url),
     }))

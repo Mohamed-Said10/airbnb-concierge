@@ -1,5 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
+import { isAuthenticatedAdmin } from '@/lib/admin-access';
+import { decryptIdNumber } from '@/lib/crypto';
 import AdminRegistrationsListClient from './AdminRegistrationsListClient';
 
 export const dynamic = 'force-dynamic';
@@ -46,7 +48,13 @@ async function getRegistrations(page: number): Promise<RegistrationsPage> {
     return { registrations: [], hasNextPage: false };
   }
 
-  const rows = (data ?? []) as Registration[];
+  const rows = ((data ?? []) as Registration[]).map((registration) => ({
+    ...registration,
+    travelers: registration.travelers.map((traveler) => ({
+      ...traveler,
+      id_number: decryptIdNumber(traveler.id_number),
+    })),
+  }));
   return {
     registrations: rows.slice(0, PAGE_SIZE),
     hasNextPage: rows.length > PAGE_SIZE,
@@ -58,6 +66,8 @@ export default async function RegistrationsPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  if (!(await isAuthenticatedAdmin())) redirect('/admin/login');
+
   const requestedPage = Number.parseInt((await searchParams).page ?? '1', 10);
   const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const { registrations, hasNextPage } = await getRegistrations(page);

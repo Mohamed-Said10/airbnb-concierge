@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { maskIdNumber } from '@/lib/id-number-display';
 
 interface Traveler {
   first_name: string;
@@ -24,6 +26,19 @@ interface Registration {
 export default function ExportButton({ registrations }: { registrations: Registration[] }) {
   const { language } = useLanguage();
   const french = language === 'fr';
+  const [includeFullIdNumbers, setIncludeFullIdNumbers] = useState(false);
+
+  const toggleIncludeFullIdNumbers = () => {
+    if (includeFullIdNumbers) {
+      setIncludeFullIdNumbers(false);
+      return;
+    }
+    const message = french
+      ? 'Ce CSV inclura les numéros de document complets, non masqués. Continuer ?'
+      : 'This CSV will include full, unmasked ID numbers. Continue?';
+    if (window.confirm(message)) setIncludeFullIdNumbers(true);
+  };
+
   const handleExport = () => {
     const rows: string[][] = [
       ['Registration ID', 'Property', 'Check-in', 'Check-out', 'Children', 'Submitted At',
@@ -44,7 +59,7 @@ export default function ExportButton({ registrations }: { registrations: Registr
           t.date_of_birth,
           t.nationality,
           t.id_type,
-          t.id_number,
+          includeFullIdNumbers ? t.id_number : maskIdNumber(t.id_number),
         ]);
       }
     }
@@ -63,15 +78,26 @@ export default function ExportButton({ registrations }: { registrations: Registr
   };
 
   return (
-    <button
-      onClick={handleExport}
-      disabled={registrations.length === 0}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-    >
-      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
-      {french ? 'Exporter CSV' : 'Export CSV'}
-    </button>
+    <div className="flex items-center gap-3">
+      <label className="flex items-center gap-1.5 text-xs text-gray-500">
+        <input
+          type="checkbox"
+          checked={includeFullIdNumbers}
+          onChange={toggleIncludeFullIdNumbers}
+          className="h-3.5 w-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+        />
+        {french ? 'Inclure les numéros de document complets' : 'Include full ID numbers'}
+      </label>
+      <button
+        onClick={handleExport}
+        disabled={registrations.length === 0}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        {french ? 'Exporter CSV' : 'Export CSV'}
+      </button>
+    </div>
   );
 }

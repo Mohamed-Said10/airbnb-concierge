@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import Logo from '@/components/Logo';
+import { openCookieSettings } from '@/components/CookieConsent';
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -110,6 +111,7 @@ const Footer = () => {
           <div className="flex gap-4 text-sm">
             <Link href="/legal/privacy" className="text-gray-400 hover:text-gray-600 transition-colors">{t.footer.privacyPolicy}</Link>
             <Link href="/legal/terms" className="text-gray-400 hover:text-gray-600 transition-colors">{t.footer.termsOfService}</Link>
+            <button type="button" onClick={openCookieSettings} className="text-gray-400 hover:text-gray-600 transition-colors">{t.footer.cookieSettings}</button>
           </div>
         </div>
       </div>
