@@ -381,6 +381,8 @@ export default function GuestRegistrationForm({ propertyId, propertyName, proper
   const [travelerErrors, setTravelerErrors] = useState<TravelerErrors[]>([]);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [sigError, setSigError] = useState('');
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentError, setConsentError] = useState('');
   const [stepWarning, setStepWarning] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [registrationId, setRegistrationId] = useState('');
@@ -471,9 +473,6 @@ export default function GuestRegistrationForm({ propertyId, propertyName, proper
     const nextDateErrors: typeof dateErrors = {};
     if (!form.checkInDate) nextDateErrors.checkInDate = gi.errors.required;
     if (!form.checkOutDate) nextDateErrors.checkOutDate = gi.errors.required;
-    if (form.checkInDate && form.checkInDate < todayDate()) {
-      nextDateErrors.checkInDate = gi.errors.pastCheckIn;
-    }
     if (form.checkInDate && form.checkOutDate && form.checkOutDate <= form.checkInDate) {
       nextDateErrors.checkOutDate = gi.errors.invalidStayDates;
     }
@@ -581,8 +580,10 @@ export default function GuestRegistrationForm({ propertyId, propertyName, proper
   };
 
   const validateSignature = () => {
-    if (!form.signature) { setSigError(gi.errors.signatureRequired); return false; }
-    return true;
+    let ok = true;
+    if (!form.signature) { setSigError(gi.errors.signatureRequired); ok = false; }
+    if (!consentChecked) { setConsentError(gi.consent.required); ok = false; }
+    return ok;
   };
 
   const showPageTop = () => {
@@ -622,6 +623,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName, proper
     e.preventDefault();
     if (!validateSignature()) return;
     setSigError('');
+    setConsentError('');
     setSubmitting(true);
     try {
       const fd = new FormData();
@@ -629,6 +631,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName, proper
       fd.append('checkOutDate', form.checkOutDate);
       fd.append('childrenCount', String(form.childrenCount));
       fd.append('signature', form.signature);
+      fd.append('consentAccepted', 'true');
       if (propertyId) fd.append('propertyId', propertyId);
 
       const travelerMeta = form.travelers.map((t) => ({
@@ -763,7 +766,7 @@ export default function GuestRegistrationForm({ propertyId, propertyName, proper
                 <h2 className="text-lg font-bold text-gray-800">{gi.intro.heading}</h2>
                 <div className="grid gap-4 p-4 sm:grid-cols-2 bg-primary-50 rounded-xl border border-primary-100">
                   <BookingDatePicker id="field-checkInDate" label={gi.personal.checkInDate} placeholder={gi.intro.selectDate}
-                    value={form.checkInDate} minDate={todayDate()} bookedRanges={bookedRanges} error={dateErrors.checkInDate} locale={language}
+                    value={form.checkInDate} bookedRanges={bookedRanges} error={dateErrors.checkInDate} locale={language}
                     onChange={(checkInDate) => {
                       setForm((previous) => ({
                         ...previous,
@@ -877,6 +880,24 @@ export default function GuestRegistrationForm({ propertyId, propertyName, proper
                   <p className="text-xs text-gray-400 mb-2">{gi.signatureStep.signatureInstruction}</p>
                   <SignaturePad onSign={handleSign} clearLabel={gi.signatureStep.clear} />
                   {sigError && <p className="text-sm text-red-600 mt-1">{sigError}</p>}
+                </div>
+                <div>
+                  <label className="flex items-start gap-2.5 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={consentChecked}
+                      onChange={(e) => { setConsentChecked(e.target.checked); if (e.target.checked) setConsentError(''); }}
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span>
+                      {gi.consent.label}{' '}
+                      <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+                        {gi.consent.policyLink}
+                      </a>
+                      .
+                    </span>
+                  </label>
+                  {consentError && <p className="text-sm text-red-600 mt-1">{consentError}</p>}
                 </div>
                 <div className="bg-primary-50 rounded-lg p-4 border border-primary-100">
                   <p className="text-sm text-primary-700">{gi.signatureStep.submitInstruction}</p>

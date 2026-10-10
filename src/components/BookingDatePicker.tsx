@@ -9,7 +9,8 @@ interface Props {
   label: string;
   value: string;
   onChange: (date: string) => void;
-  minDate: string;
+  /** Omit to allow past dates too (e.g. the guest check-in form's check-in picker, for backdating a stay). */
+  minDate?: string;
   maxDate?: string;
   /** Disable days that fall inside a booked range. The checkout picker leaves this
    * off — its reachable range is already bounded by maxDate (the first booked day
@@ -35,8 +36,9 @@ export default function BookingDatePicker({
   id, label, value, onChange, minDate, maxDate, blockBookedDays = true, bookedRanges, placeholder, error, locale,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const todayAsFallback = iso(new Date());
   const [viewMonth, setViewMonth] = useState(() => {
-    const [year, month] = (value || minDate).split('-').map(Number);
+    const [year, month] = (value || minDate || todayAsFallback).split('-').map(Number);
     return new Date(year, (month || 1) - 1, 1);
   });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +54,7 @@ export default function BookingDatePicker({
   }, [open]);
 
   const openPicker = () => {
-    const [year, month] = (value || minDate).split('-').map(Number);
+    const [year, month] = (value || minDate || todayAsFallback).split('-').map(Number);
     setViewMonth(new Date(year, (month || 1) - 1, 1));
     setOpen(true);
   };
@@ -112,7 +114,7 @@ export default function BookingDatePicker({
             {days.map((day) => {
               const dateStr = iso(day);
               const booked = isBooked(dateStr, bookedRanges);
-              const disabled = dateStr < minDate || (!!maxDate && dateStr > maxDate) || (blockBookedDays && booked);
+              const disabled = (!!minDate && dateStr < minDate) || (!!maxDate && dateStr > maxDate) || (blockBookedDays && booked);
               const selected = dateStr === value;
               const isToday = dateStr === today;
               return (

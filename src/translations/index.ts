@@ -55,6 +55,7 @@ export const translations = {
       rights: 'All rights reserved.',
       privacyPolicy: 'Privacy Policy',
       termsOfService: 'Terms of Service',
+      cookieSettings: 'Cookie settings',
     },
     services: {
       label: 'Our Services',
@@ -296,6 +297,11 @@ export const translations = {
         submitInstruction: 'By signing and submitting this form, you confirm that all information provided is accurate.',
         submit: 'Submit Registration', submitting: 'Submitting...',
       },
+      consent: {
+        label: 'I have read and agree to the collection and use of my personal data as described in the',
+        policyLink: 'Privacy Policy',
+        required: 'You must agree to the Privacy Policy before submitting.',
+      },
       nav: { next: 'Next', back: 'Back' },
       multi: {
         mainTraveler: 'Main Traveler', traveler: 'Traveler', of: 'of',
@@ -389,6 +395,7 @@ export const translations = {
       rights: 'Tous droits réservés.',
       privacyPolicy: 'Politique de confidentialité',
       termsOfService: "Conditions d'utilisation",
+      cookieSettings: 'Paramètres des cookies',
     },
     services: {
       label: 'Nos services',
@@ -629,6 +636,11 @@ export const translations = {
         submitHeading: "Soumettre l'enregistrement",
         submitInstruction: "En signant et soumettant ce formulaire, vous confirmez que toutes les informations fournies sont exactes.",
         submit: "Soumettre l'enregistrement", submitting: 'En cours...',
+      },
+      consent: {
+        label: 'J\'ai lu et j\'accepte la collecte et l\'utilisation de mes données personnelles telles que décrites dans la',
+        policyLink: 'Politique de confidentialité',
+        required: 'Vous devez accepter la politique de confidentialité avant de soumettre.',
       },
       nav: { next: 'Suivant', back: 'Retour' },
       multi: {

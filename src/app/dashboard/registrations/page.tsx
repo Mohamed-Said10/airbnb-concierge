@@ -1,5 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { decryptIdNumber } from '@/lib/crypto';
 import RegistrationsHeader from './RegistrationsHeader';
 import RegistrationsFilter from './RegistrationsFilter';
 import NoRegistrations from './NoRegistrations';
@@ -48,7 +49,13 @@ export default async function DashboardRegistrationsPage() {
         .order('created_at', { ascending: false })
     : { data: [] };
 
-  const rows = (registrations ?? []) as unknown as Registration[];
+  const rows = ((registrations ?? []) as unknown as Registration[]).map((registration) => ({
+    ...registration,
+    travelers: registration.travelers.map((traveler) => ({
+      ...traveler,
+      id_number: decryptIdNumber(traveler.id_number),
+    })),
+  }));
 
   return (
     <div className="p-4 sm:p-8">

@@ -1,4 +1,6 @@
+import { redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
+import { isAuthenticatedAdmin } from '@/lib/admin-access';
 import AdminDashboardClient from './AdminDashboardClient';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +26,8 @@ async function getStats() {
 }
 
 export default async function AdminDashboard() {
+  if (!(await isAuthenticatedAdmin())) redirect('/admin/login');
+
   const { regCount, leadCount, recentRegs, recentLeads } = await getStats();
 
   return (

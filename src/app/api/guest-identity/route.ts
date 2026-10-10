@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { sendEmail } from '@/lib/brevo';
 import { COUNTRY_CODES } from '@/data/countries';
+import { encryptIdNumber } from '@/lib/crypto';
+import { maskIdNumber } from '@/lib/id-number-display';
+import { PRIVACY_POLICY_VERSION, GUEST_DATA_RETENTION_DAYS } from '@/lib/legal';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const ALLOWED_ID_TYPES = ['cin', 'passport', 'residence', 'other'];
@@ -33,6 +36,7 @@ export async function POST(req: NextRequest) {
     const travelersJson = formData.get('travelers') as string;
     const propertyRef = (formData.get('propertyRef') as string) || null;
     const propertyId = (formData.get('propertyId') as string) || null;
+    const consentAccepted = formData.get('consentAccepted') === 'true';
     const childrenCountRaw = Number(formData.get('childrenCount'));
     const childrenCount = Number.isInteger(childrenCountRaw) && childrenCountRaw >= 0 && childrenCountRaw <= 10
       ? childrenCountRaw
@@ -43,13 +47,16 @@ export async function POST(req: NextRequest) {
       !checkOutDate ||
       !isRealIsoDate(checkInDate) ||
       !isRealIsoDate(checkOutDate) ||
-      checkInDate < new Date().toISOString().slice(0, 10) ||
       checkOutDate <= checkInDate ||
       !signatureDataUrl.startsWith('data:image/') ||
       signatureDataUrl.length > 3 * 1024 * 1024 ||
       !travelersJson
     ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    if (!consentAccepted) {
+      return NextResponse.json({ error: 'Consent to data processing is required' }, { status: 400 });
     }
 
     const travelers: Array<{
@@ -95,9 +102,9 @@ export async function POST(req: NextRequest) {
 
     if (sigUploadError) throw sigUploadError;
 
-    const { data: sigUrlData } = db.storage
-      .from('guest-id-photos')
-      .getPublicUrl(signaturePath);
+    const retentionUntil = new Date(checkOutDate);
+    retentionUntil.setUTCDate(retentionUntil.getUTCDate() + GUEST_DATA_RETENTION_DAYS);
+    const consentIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
 
     // Insert registration row
     const { data: registration, error: regError } = await db
@@ -106,9 +113,18 @@ export async function POST(req: NextRequest) {
         check_in_date: checkInDate,
         check_out_date: checkOutDate,
         children_count: childrenCount,
-        signature_url: sigUrlData.publicUrl,
+        // The bucket is private — store the bare storage path, not a
+        // "public" URL shape. Every read path (dashboard/admin detail pages,
+        // deleteRegistration()) already re-derives a signed URL or storage
+        // path from this value and falls through unchanged for values it
+        // doesn't recognize, so this doesn't break existing rows.
+        signature_url: signaturePath,
         property_ref: propertyRef,
         property_id: propertyId,
+        consent_given_at: new Date().toISOString(),
+        consent_ip: consentIp,
+        consent_policy_version: PRIVACY_POLICY_VERSION,
+        retention_until: retentionUntil.toISOString().slice(0, 10),
       })
       .select('id')
       .single();
@@ -133,9 +149,7 @@ export async function POST(req: NextRequest) {
           .upload(frontPath, frontBuffer, { contentType: frontFile.type, upsert: false });
         if (frontErr) throw frontErr;
 
-        const { data: frontUrl } = db.storage.from('guest-id-photos').getPublicUrl(frontPath);
-
-        let backPhotoUrl: string | null = null;
+        let backPhotoPath: string | null = null;
         const backFile = formData.get(`backPhoto_${idx}`) as File | null;
         if (backFile) {
           if (!(backFile instanceof File) || !isValidImage(backFile)) {
@@ -147,8 +161,7 @@ export async function POST(req: NextRequest) {
             .from('guest-id-photos')
             .upload(backPath, backBuffer, { contentType: backFile.type, upsert: false });
           if (backErr) throw backErr;
-          const { data: backUrl } = db.storage.from('guest-id-photos').getPublicUrl(backPath);
-          backPhotoUrl = backUrl.publicUrl;
+          backPhotoPath = backPath;
         }
 
         return {
@@ -161,11 +174,14 @@ export async function POST(req: NextRequest) {
           place_of_birth: t.placeOfBirth || '',
           nationality: t.nationality,
           id_type: t.idType,
-          id_number: t.idNumber,
+          // Encrypted at rest: CNDP treats the national ID/passport number as
+          // "sensitive data" requiring an extra safeguard beyond the DB's
+          // own at-rest encryption. See src/lib/crypto.ts.
+          id_number: encryptIdNumber(t.idNumber),
           id_expiry_date: t.idExpiryDate || null,
           address: t.address || '',
-          id_front_photo_url: frontUrl.publicUrl,
-          id_back_photo_url: backPhotoUrl,
+          id_front_photo_url: frontPath,
+          id_back_photo_url: backPhotoPath,
         };
       })
     );
@@ -216,7 +232,7 @@ export async function POST(req: NextRequest) {
           ${propertyRef ? `<p><strong>Property:</strong> ${propertyRef}</p>` : ''}
           <h3>Travelers (${travelers.length})</h3>
           <ul>
-            ${travelers.map((t) => `<li>${t.firstName} ${t.lastName} — ${t.nationality} — ${t.idType.toUpperCase()} ${t.idNumber}</li>`).join('')}
+            ${travelers.map((t) => `<li>${t.firstName} ${t.lastName} — ${t.nationality} — ${t.idType.toUpperCase()} ${maskIdNumber(t.idNumber)}</li>`).join('')}
           </ul>
           <p><a href="${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/admin/registrations">View in admin dashboard</a></p>
         `,

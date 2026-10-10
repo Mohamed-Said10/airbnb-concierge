@@ -1,6 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
+import { decryptIdNumber } from '@/lib/crypto';
 import RegistrationDetailClient from './RegistrationDetailClient';
 
 interface Traveler {
@@ -80,6 +81,7 @@ export default async function RegistrationDetailPage({
   const travelersWithSignedUrls = await Promise.all(
     registration.travelers.map(async (t) => ({
       ...t,
+      id_number: decryptIdNumber(t.id_number),
       frontSigned: await signedUrl(db, t.id_front_photo_url),
       backSigned: await signedUrl(db, t.id_back_photo_url),
     }))
